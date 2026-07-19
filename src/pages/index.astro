@@ -1,0 +1,43 @@
+---
+import Layout from "../layouts/Layout.astro";
+import RoomBackground from "../components/RoomBackground.astro";
+import TVFrame from "../components/TV/TVFrame.astro";
+import Screen from "../components/TV/Screen.svelte";
+import RemoteControl from "../components/Remote/RemoteControl.svelte";
+import ChannelList from "../components/TV/ChannelList.svelte";
+import CountrySelect from "../components/TV/CountrySelect.svelte";
+---
+
+<Layout title="RetroTV - Public IPTV Player">
+    <RoomBackground />
+
+    <!-- Rotate Device Overlay -->
+    <div class="fixed inset-0 z-[100] bg-black text-white flex flex-col items-center justify-center p-8 text-center md:hidden portrait-warning">
+        <div class="text-4xl mb-4">🔄</div>
+        <h2 class="text-xl font-bold font-serif tracking-widest mb-2">PLEASE ROTATE DEVICE</h2>
+        <p class="text-xs text-gray-500">EXPERIENCE OPTIMIZED FOR HORIZONTAL VIEW</p>
+    </div>
+
+    <main class="relative z-10 flex items-center justify-center min-h-screen w-full overflow-hidden">
+        <!-- Country Select (shown when no country selected) -->
+        <CountrySelect client:load />
+
+        <!-- The TV -->
+        <TVFrame>
+            <Screen client:load />
+        </TVFrame>
+
+        <!-- Remote Control -->
+        <RemoteControl client:load />
+
+        <!-- Channel List Overlay -->
+        <ChannelList client:load />
+    </main>
+
+    <style>
+        .portrait-warning { display: none; }
+        @media (max-width: 768px) and (orientation: portrait) {
+            .portrait-warning { display: flex; }
+        }
+    </style>
+</Layout>

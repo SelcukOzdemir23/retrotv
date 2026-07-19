@@ -1,0 +1,123 @@
+---
+
+---
+
+<div class="relative group mx-auto">
+    <!-- Ambilight Glow -->
+    <div
+        class="absolute inset-0 bg-[#fffadc] blur-[150px] opacity-10 scale-125 -z-10 transition-opacity duration-700"
+        id="ambilight"
+    >
+    </div>
+
+    <!-- Main TV Casing -->
+    <div
+        class="relative w-[95vw] md:w-[120vh] max-w-[98vw] aspect-[4/3] bg-gradient-to-b from-gray-300 via-gray-400 to-gray-500 rounded-xl p-4 md:p-8 shadow-[0_10px_50px_rgba(0,0,0,0.8),inset_0_2px_5px_rgba(255,255,255,0.4)] border-b-8 border-r-8 border-gray-700 overflow-hidden flex flex-col"
+    >
+        <!-- Top Bezel -->
+        <div class="w-full pb-2"></div>
+
+        <div class="flex flex-1 w-full relative">
+            <!-- Left Speaker -->
+            <div class="hidden md:flex flex-col justify-center items-center w-8 md:w-12 mr-4 space-y-1">
+                {Array(20).fill(0).map(() => (
+                    <>
+                        <div class="w-1 h-1 bg-gray-700 rounded-full opacity-30" />
+                        <div class="w-1 h-1 bg-gray-700 rounded-full opacity-30" />
+                    </>
+                ))}
+            </div>
+
+            <!-- Screen Container -->
+            <div
+                class="relative flex-1 bg-black rounded-[5px] md:rounded-[10px] overflow-hidden shadow-[inset_0_0_20px_rgba(0,0,0,1)] border-[4px] border-gray-800 z-10"
+            >
+                <!-- Inner Shadow -->
+                <div class="absolute inset-0 z-50 pointer-events-none rounded-[5px] md:rounded-[10px] shadow-[inset_0_0_30px_rgba(0,0,0,0.8)]"></div>
+
+                <!-- Screen Reflection -->
+                <div class="absolute inset-0 z-50 pointer-events-none bg-gradient-to-br from-white/5 to-transparent opacity-30 rounded-[5px] md:rounded-[10px]"></div>
+
+                <slot />
+            </div>
+
+            <!-- Right Speaker -->
+            <div class="hidden md:flex flex-col justify-center items-center w-8 md:w-12 ml-4 space-y-1">
+                {Array(20).fill(0).map(() => (
+                    <>
+                        <div class="w-1 h-1 bg-gray-700 rounded-full opacity-30" />
+                        <div class="w-1 h-1 bg-gray-700 rounded-full opacity-30" />
+                    </>
+                ))}
+            </div>
+        </div>
+
+        <!-- Bottom Control Panel -->
+        <div class="w-full h-12 md:h-16 mt-4 bg-gray-400 rounded-md shadow-inner flex items-center justify-between px-8 border-t border-gray-500 relative">
+            <!-- Input Labels -->
+            <div class="flex space-x-4 opacity-50 text-[10px] font-mono text-gray-800">
+                <div class="flex flex-col items-center">
+                    <div class="w-8 h-2 bg-black rounded-sm mb-1"></div>
+                    <span>S-VIDEO</span>
+                </div>
+                <div class="flex flex-col items-center">
+                    <div class="flex space-x-1">
+                        <div class="w-2 h-2 rounded-full bg-yellow-500 border border-black/20"></div>
+                        <div class="w-2 h-2 rounded-full bg-white border border-black/20"></div>
+                        <div class="w-2 h-2 rounded-full bg-red-500 border border-black/20"></div>
+                    </div>
+                    <span>AV IN</span>
+                </div>
+            </div>
+
+            <!-- Brand -->
+            <div class="absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 font-bold font-serif text-gray-700 text-xs md:text-sm tracking-[0.3em] uppercase opacity-80 drop-shadow-sm">
+                ALTUS
+            </div>
+
+            <!-- Power LED + Button -->
+            <div class="flex items-center space-x-4">
+                <div
+                    id="power-led"
+                    class="w-2 h-2 md:w-3 md:h-3 rounded-full bg-red-900 shadow-[0_0_2px_rgba(0,0,0,0.5)] transition-all duration-300"
+                ></div>
+
+                <button
+                    id="tv-power-btn"
+                    class="w-8 h-8 md:w-10 md:h-10 rounded-full bg-gray-300 shadow-[2px_2px_5px_rgba(0,0,0,0.4),inset_1px_1px_2px_white] border border-gray-400 active:shadow-[inset_2px_2px_5px_rgba(0,0,0,0.4)] active:translate-y-[1px] flex items-center justify-center cursor-pointer"
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    import { tvStore, togglePower } from "../../stores/tvStore";
+
+    const powerBtn = document.getElementById("tv-power-btn");
+    const powerLed = document.getElementById("power-led");
+    const ambilight = document.getElementById("ambilight");
+
+    if (powerBtn) {
+        powerBtn.addEventListener("click", togglePower);
+    }
+
+    tvStore.subscribe((state) => {
+        if (powerLed) {
+            if (state.power) {
+                powerLed.style.backgroundColor = "#00ff00";
+                powerLed.style.boxShadow = "0 0 10px #00ff00";
+            } else {
+                powerLed.style.backgroundColor = "#ff0000";
+                powerLed.style.boxShadow = "0 0 10px #ff0000";
+            }
+        }
+        if (ambilight) {
+            ambilight.style.opacity = state.power ? "0.15" : "0.05";
+        }
+    });
+</script>
