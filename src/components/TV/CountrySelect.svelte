@@ -1,10 +1,10 @@
 <script lang="ts">
   import { onMount, tick } from 'svelte';
-  import { fetchCountries } from '../../lib/iptvApi';
-  import { channelStore, setCountry, setChannels, setLoading, setError as setStoreError } from '../../stores/channelStore';
-  import { fetchChannelsForCountry, extractGroups } from '../../lib/iptvApi';
+  import { fetchCountries, fetchChannelsFromM3U, extractGroups } from '../../lib/iptvApi';
+  import { channelStore, setCountry, setChannels, setLoading, setError as setStoreError, setChannelListOpen } from '../../stores/channelStore';
+  import { fetchChannelsForCountry } from '../../lib/iptvApi';
   import { tvStore } from '../../stores/tvStore';
-  import type { Country } from '../../lib/types';
+  import type { Country, Channel } from '../../lib/types';
 
   let countries: Country[] = [];
   let filtered: Country[] = [];
@@ -78,6 +78,37 @@
     loadCountries();
   }
 
+  // ── Local M3U List ────────────────────────────────────────────────
+
+  async function loadLocalList() {
+    setLoading(true);
+    setStoreError(null);
+
+    try {
+      const base = import.meta.env.BASE_URL || '/';
+      const channels = await fetchChannelsFromM3U(base + 'index.m3u');
+      if (channels.length === 0) {
+        setStoreError('Local list is empty or could not be parsed.');
+        return;
+      }
+      const groups = extractGroups(channels);
+
+      setCountry({ name: 'Local List', code: 'M3U', languages: [], flag: '📋' });
+      setChannels(channels, groups);
+
+      if (!tvStore.get().power) {
+        tvStore.setKey('power', true);
+      }
+
+      setChannelListOpen(true);
+    } catch (e) {
+      setStoreError('Failed to load local channel list. Try a country instead.');
+      channelStore.setKey('selectedCountry', null);
+    } finally {
+      setLoading(false);
+    }
+  }
+
   // Generate highlighted parts for search matching
   // Safe approach: returns parts array instead of innerHTML
   function highlightParts(text: string, query: string): { text: string; highlight: boolean }[] {
@@ -110,6 +141,46 @@
         Where to watch?
       </h1>
       <p class="text-gray-500 text-sm mt-2">Pick a country to browse available TV channels</p>
+    </div>
+
+    <!-- Local List Button -->
+    <div class="w-full max-w-md mb-4 transition-all duration-700 delay-75"
+         class:opacity-100={mounted} class:opacity-0={!mounted}
+         class:translate-y-0={mounted} class:translate-y-4={!mounted}>
+      <button
+        on:click={loadLocalList}
+        class="w-full flex items-center justify-between gap-3 px-5 py-3.5 rounded-xl
+               bg-gradient-to-r from-[#00ff33]/10 via-[#00ff33]/5 to-transparent
+               border border-[#00ff33]/25 hover:border-[#00ff33]/40
+               hover:from-[#00ff33]/15 hover:via-[#00ff33]/8
+               active:scale-[0.98] transition-all duration-200 group cursor-pointer"
+      >
+        <div class="flex items-center gap-3">
+          <div class="w-9 h-9 rounded-lg bg-[#00ff33]/10 flex items-center justify-center group-hover:scale-110 transition-transform">
+            <svg class="w-4 h-4 text-[#00ff33]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+            </svg>
+          </div>
+          <div class="text-left">
+            <div class="text-sm font-bold text-white/90 group-hover:text-white transition-colors">Local List</div>
+            <div class="text-[10px] text-gray-500 mt-0.5">13K+ channels from local playlist</div>
+          </div>
+        </div>
+        <div class="flex items-center gap-1.5">
+          <span class="text-[10px] font-mono text-gray-600">M3U</span>
+          <svg class="w-3.5 h-3.5 text-[#00ff33]/60 group-hover:text-[#00ff33] transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+          </svg>
+        </div>
+      </button>
+    </div>
+
+    <!-- Divider: or -->
+    <div class="flex items-center gap-3 w-full max-w-md mb-4 transition-all duration-700 delay-75"
+         class:opacity-60={mounted} class:opacity-0={!mounted}>
+      <div class="flex-1 h-px bg-white/[0.06]"></div>
+      <span class="text-[10px] text-gray-600 font-mono tracking-widest">OR BROWSE BY COUNTRY</span>
+      <div class="flex-1 h-px bg-white/[0.06]"></div>
     </div>
 
     <!-- Search with stagger -->
