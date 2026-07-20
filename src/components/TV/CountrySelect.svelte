@@ -14,8 +14,8 @@
     errorMsg = '';
 
     try {
-      const base = import.meta.env.BASE_URL || '/';
-      const m3uUrl = base.endsWith('/') ? base + 'index.m3u' : base + '/index.m3u';
+      const base = (import.meta.env.BASE_URL || '').replace(/\/+$/, '');
+      const m3uUrl = base + '/index.m3u';
       statusMsg = 'Loading channel list...';
       const channels = await fetchChannelsFromM3U(m3uUrl);
 
