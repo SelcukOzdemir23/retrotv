@@ -1,10 +1,9 @@
 import { map } from 'nanostores';
-import type { Country, Channel } from '../lib/types';
+import type { Channel } from '../lib/types';
 
 // ─── Store Definition ───────────────────────────────────────────────
 
 export interface ChannelStoreValue {
-  selectedCountry: Country | null;
   channels: Channel[];
   channelGroups: string[];
   currentIndex: number;
@@ -16,7 +15,6 @@ export interface ChannelStoreValue {
 }
 
 export const channelStore = map<ChannelStoreValue>({
-  selectedCountry: null,
   channels: [],
   channelGroups: [],
   currentIndex: 0,
@@ -28,13 +26,6 @@ export const channelStore = map<ChannelStoreValue>({
 });
 
 // ─── Actions ────────────────────────────────────────────────────────
-
-export function setCountry(country: Country) {
-  channelStore.setKey('selectedCountry', country);
-  channelStore.setKey('currentIndex', 0);
-  channelStore.setKey('searchQuery', '');
-  channelStore.setKey('selectedGroup', null);
-}
 
 export function setChannels(channels: Channel[], groups: string[]) {
   channelStore.setKey('channels', channels);
