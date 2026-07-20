@@ -34,36 +34,47 @@
   }
 </script>
 
-<div class="fixed bottom-5 right-5 md:bottom-20 md:right-20 z-50 select-none">
+<div class="fixed bottom-5 right-5 md:bottom-10 md:right-10 z-50 select-none">
   <div
-    class="bg-gradient-to-b from-[#1c1c1c] to-[#141414] rounded-[20px] p-4
+    class="bg-gradient-to-b from-[#1c1c1c] to-[#141414] rounded-[20px] p-4 pt-3
            shadow-[10px_10px_30px_rgba(0,0,0,0.8),inset_1px_1px_2px_rgba(255,255,255,0.08)]
-           border border-white/[0.06] w-32 md:w-40
-           transform hover:scale-[1.02] transition-all duration-300"
+           border border-white/[0.06] w-36 md:w-44"
   >
-    <!-- Brand / Display -->
-    <div class="flex items-center justify-between mb-4 px-1">
+    <!-- ── CHANNELS BROWSE BUTTON (top full-width row) ── -->
+    <button
+      on:click={toggleChannelList}
+      class="w-full flex items-center justify-between gap-2 px-3 py-2.5 mb-3
+             rounded-xl bg-[#00ff33]/8 border border-[#00ff33]/20
+             hover:bg-[#00ff33]/15 hover:border-[#00ff33]/35
+             active:scale-[0.98] transition-all duration-200 group cursor-pointer"
+      aria-label="Browse Channels"
+    >
+      <div class="flex items-center gap-2">
+        <svg class="w-3.5 h-3.5 text-[#00ff33] group-hover:scale-110 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/>
+        </svg>
+        <span class="text-[11px] font-bold text-[#00ff33]/80 group-hover:text-[#00ff33] tracking-wider transition-colors">
+          BROWSE
+        </span>
+      </div>
+      <div class="flex items-center gap-1.5">
+        <span class="text-[9px] font-mono text-gray-500">{channels.length || '--'}</span>
+        <svg class="w-3 h-3 text-gray-600 group-hover:text-gray-400 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+        </svg>
+      </div>
+    </button>
+
+    <!-- ── Brand / Display ── -->
+    <div class="flex items-center justify-between mb-3 px-1">
       <div class="text-gray-600 text-[9px] tracking-[0.2em] font-bold">TV</div>
       <div class="font-mono text-[10px] text-[#00ff33] osd-text bg-black/40 px-2 py-0.5 rounded">
         {displayNum}
       </div>
     </div>
 
-    <!-- Power + Browse Row -->
-    <div class="flex justify-between items-center mb-5">
-      <button
-        on:click={toggleChannelList}
-        class="w-7 h-7 md:w-8 md:h-8 rounded-lg bg-white/[0.04] border border-white/[0.08]
-               hover:bg-white/10 hover:border-white/20 active:scale-95
-               transition-all duration-200 flex items-center justify-center group"
-        aria-label="Browse Channels"
-        title="Browse Channels"
-      >
-        <svg class="w-3.5 h-3.5 text-gray-500 group-hover:text-white/70 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/>
-        </svg>
-      </button>
-
+    <!-- ── Power Button (right-aligned) ── -->
+    <div class="flex justify-end items-center mb-4">
       <button
         on:click={togglePower}
         class="w-8 h-8 md:w-10 md:h-10 rounded-full bg-gradient-to-b from-red-600 to-red-800
@@ -78,8 +89,8 @@
       </button>
     </div>
 
-    <!-- Channel / Volume Grid -->
-    <div class="grid grid-cols-2 gap-4 mb-5">
+    <!-- ── Channel / Volume Grid ── -->
+    <div class="grid grid-cols-2 gap-4 mb-4">
       <div class="flex flex-col items-center space-y-1.5">
         <span class="text-gray-500 text-[9px] font-bold tracking-wider">CH</span>
         <button
@@ -101,8 +112,8 @@
       </div>
     </div>
 
-    <!-- Number Pad -->
-    <div class="grid grid-cols-3 gap-1.5 mt-4">
+    <!-- ── Number Pad ── -->
+    <div class="grid grid-cols-3 gap-1.5 mt-3">
       {#each [1, 2, 3, 4, 5, 6, 7, 8, 9] as num}
         <button
           on:click={() => handleSetChannel(num - 1)}

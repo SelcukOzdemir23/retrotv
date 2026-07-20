@@ -1,77 +1,127 @@
 // ─── IPTV-org API Service ──────────────────────────────────────────
 // Docs: https://github.com/iptv-org/api
+//
+// Uses channels.json for metadata and streams.json for stream URLs.
+// Both files are cached after first fetch to minimize network calls.
 
-import type { Country, Channel } from './types';
+import type { Country, ApiChannel, ApiStream, Channel } from './types';
 
 const API_BASE = 'https://iptv-org.github.io/api';
-const M3U_BASE = 'https://iptv-org.github.io/iptv';
+
+// CORS proxy to bypass mixed-content blocking on HTTPS sites (GitHub Pages).
+// Stream URLs from IPTV-org are HTTP; on HTTPS pages they get blocked.
+// This proxies them through an HTTPS endpoint.
+const CORS_PROXY = 'https://corsproxy.io/?';
+
+// ─── Caches ─────────────────────────────────────────────────────────
+
+let cachedCountries: Country[] | null = null;
+let cachedChannels: ApiChannel[] | null = null;
+let cachedStreams: ApiStream[] | null = null;
 
 // ─── Countries ──────────────────────────────────────────────────────
 
-const cachedCountries: Country[] = [];
-
 export async function fetchCountries(): Promise<Country[]> {
-  if (cachedCountries.length > 0) return cachedCountries;
+  if (cachedCountries) return cachedCountries;
 
   const res = await fetch(`${API_BASE}/countries.json`);
   if (!res.ok) throw new Error(`Failed to fetch countries (${res.status})`);
 
   const data: Country[] = await res.json();
-  cachedCountries.push(...data);
+  cachedCountries = data;
   return data;
 }
 
-// ─── M3U Playlist ───────────────────────────────────────────────────
+// ─── Channels + Streams → Merged Channel List ──────────────────────
+// 1. Fetch channels.json, filter by country code
+// 2. Fetch streams.json, match by channel id
+// 3. Merge into our Channel type
 
-export function parseM3U(text: string): Channel[] {
-  const lines = text.split('\n');
-  const channels: Channel[] = [];
-  const seen = new Set<string>();
+async function fetchChannelsAll(): Promise<ApiChannel[]> {
+  if (cachedChannels) return cachedChannels;
 
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i].trim();
+  console.log('[iptvApi] Fetching channels.json...');
+  const res = await fetch(`${API_BASE}/channels.json`);
+  if (!res.ok) throw new Error(`Failed to fetch channels (${res.status})`);
 
-    if (!line.startsWith('#EXTINF:')) continue;
+  const data: ApiChannel[] = await res.json();
+  console.log(`[iptvApi] channels.json loaded: ${data.length} channels`);
+  cachedChannels = data;
+  return data;
+}
 
-    // Parse EXTINF attributes
-    const logoMatch = line.match(/tvg-logo="([^"]*)"/);
-    const groupMatch = line.match(/group-title="([^"]*)"/);
+async function fetchStreamsAll(): Promise<ApiStream[]> {
+  if (cachedStreams) return cachedStreams;
 
-    // Extract channel name (after last comma)
-    const lastComma = line.lastIndexOf(',');
-    const name = lastComma >= 0 ? line.slice(lastComma + 1).trim() : '';
-    if (!name) continue;
+  console.log('[iptvApi] Fetching streams.json...');
+  const res = await fetch(`${API_BASE}/streams.json`);
+  if (!res.ok) throw new Error(`Failed to fetch streams (${res.status})`);
 
-    // URL is the next non-empty, non-comment line
-    const nextLine = lines[i + 1]?.trim() ?? '';
-    if (!nextLine || nextLine.startsWith('#')) continue;
-    const url = nextLine;
-
-    // Deduplicate by name+url
-    const key = `${name}::${url}`;
-    if (seen.has(key)) continue;
-    seen.add(key);
-
-    channels.push({
-      id: `ch-${channels.length}`,
-      name,
-      url,
-      logo: logoMatch?.[1] || undefined,
-      group: groupMatch?.[1] || undefined,
-    });
-  }
-
-  return channels;
+  const data: ApiStream[] = await res.json();
+  console.log(`[iptvApi] streams.json loaded: ${data.length} streams`);
+  cachedStreams = data;
+  return data;
 }
 
 export async function fetchChannelsForCountry(countryCode: string): Promise<Channel[]> {
-  const url = `${M3U_BASE}/countries/${countryCode.toLowerCase()}.m3u`;
-  const res = await fetch(url);
+  const code = countryCode.toUpperCase();
 
-  if (!res.ok) throw new Error(`Failed to fetch playlist for ${countryCode} (${res.status})`);
+  console.log(`[iptvApi] Fetching channels for ${code}...`);
 
-  const text = await res.text();
-  return parseM3U(text);
+  // 1. Get all channels, filter by country
+  const allChannels = await fetchChannelsAll();
+  const countryChannels = allChannels.filter((ch) => ch.country === code);
+  console.log(`[iptvApi] ${countryChannels.length} channels for ${code}`);
+
+  if (countryChannels.length === 0) {
+    return [];
+  }
+
+  // 2. Get all streams, build a map by channel id → first stream url
+  const allStreams = await fetchStreamsAll();
+  const streamMap = new Map<string, string>();
+
+  for (const s of allStreams) {
+    if (s.channel && s.url && !streamMap.has(s.channel)) {
+      // Prefer: higher quality, no label warning
+      if (s.label && s.label.includes('Geo')) continue; // Skip geo-blocked if possible
+      // Wrap HTTP URLs through CORS proxy for HTTPS compatibility
+      const proxied = s.url.startsWith('http://')
+        ? CORS_PROXY + encodeURIComponent(s.url)
+        : s.url;
+      streamMap.set(s.channel, proxied);
+    }
+  }
+
+  console.log(`[iptvApi] ${streamMap.size} unique streams in map`);
+
+  // 3. Merge: for each channel, try to find a stream URL
+  const result: Channel[] = [];
+  const seen = new Set<string>();
+
+  for (const ch of countryChannels) {
+    // Skip NSFW channels
+    if (ch.is_nsfw) continue;
+
+    const url = streamMap.get(ch.id);
+    if (!url) continue; // Skip channels without working streams
+
+    // Deduplicate by name
+    const name = ch.name.trim();
+    if (seen.has(name)) continue;
+    seen.add(name);
+
+    result.push({
+      id: ch.id,
+      name,
+      url,
+      group: ch.categories?.[0] || undefined,
+    });
+  }
+
+  console.log(`[iptvApi] Final: ${result.length} playable channels for ${code}`);
+
+  return result;
 }
 
 // ─── Groups / Categories ────────────────────────────────────────────

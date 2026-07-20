@@ -6,7 +6,7 @@ import tailwindcss from '@tailwindcss/vite';
 
 // https://astro.build/config
 export default defineConfig({
-  site: 'https://YOUR_USERNAME.github.io/retrotv',
+  site: 'https://SelcukOzdemir23.github.io/retrotv',
   base: '/retrotv',
   output: 'static',
   integrations: [svelte()],

@@ -3,6 +3,7 @@
   import { fetchCountries } from '../../lib/iptvApi';
   import { channelStore, setCountry, setChannels, setLoading, setError as setStoreError } from '../../stores/channelStore';
   import { fetchChannelsForCountry, extractGroups } from '../../lib/iptvApi';
+  import { tvStore } from '../../stores/tvStore';
   import type { Country } from '../../lib/types';
 
   let countries: Country[] = [];
@@ -14,7 +15,10 @@
   // Only show if no country selected yet
   $: visible = !$channelStore.selectedCountry;
 
-  onMount(async () => {
+  // Separate fetch function (called from onMount and retry)
+  async function loadCountries() {
+    errorMsg = '';
+    loading = true;
     try {
       countries = await fetchCountries();
       // Sort alphabetically but put TR at top
@@ -29,7 +33,9 @@
     } finally {
       loading = false;
     }
-  });
+  }
+
+  onMount(loadCountries);
 
   $: if (query) {
     const q = query.toLowerCase();
@@ -43,16 +49,22 @@
   }
 
   async function selectCountry(country: Country) {
-    setCountry(country);
     setLoading(true);
+    setStoreError(null);
 
     try {
       const channels = await fetchChannelsForCountry(country.code);
       const groups = extractGroups(channels);
+
+      // Only now set the country (after data is ready) so overlay stays visible
+      setCountry(country);
       setChannels(channels, groups);
-      setStoreError(null);
+
+      // Auto power-on TV when country is selected
+      if (!tvStore.get().power) {
+        tvStore.setKey('power', true);
+      }
     } catch (e) {
-      // Reset country selection so user can try again
       setStoreError(`Could not load channels for ${country.name}. Try another country.`);
       channelStore.setKey('selectedCountry', null);
     } finally {
@@ -61,9 +73,7 @@
   }
 
   function retry() {
-    errorMsg = '';
-    loading = true;
-    onMount();
+    loadCountries();
   }
 </script>
 
