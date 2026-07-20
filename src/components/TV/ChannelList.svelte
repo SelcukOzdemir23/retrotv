@@ -11,6 +11,7 @@
   $: selectedGroup = store.selectedGroup;
   $: currentIndex = store.currentIndex;
   $: open = store.channelListOpen;
+  $: isLoading = store.isLoading;
 
   // Initialize local query from store on mount
   let query = $channelStore.searchQuery;
@@ -44,7 +45,9 @@
 {#if open}
   <!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
   <div
-    class="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm transition-opacity duration-300"
+    class="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm transition-all duration-300"
+    class:opacity-100={open}
+    class:opacity-0={!open}
     on:click={closeOverlay}
   ></div>
 {/if}
@@ -53,7 +56,7 @@
 <div
   class="fixed top-0 right-0 z-50 h-full w-full sm:w-[420px] md:w-[480px] bg-gradient-to-l from-[#0a0a0a] via-[#0d0d0d] to-[#111]
          border-l border-white/[0.06] shadow-2xl shadow-black/50
-         transition-all duration-400 ease-out-expo flex flex-col"
+         transition-all duration-500 ease-out flex flex-col"
   class:translate-x-0={open}
   class:translate-x-full={!open}
 >
@@ -65,11 +68,13 @@
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/>
         </svg>
         CHANNELS
-        <span class="text-gray-600 font-normal text-xs ml-1">({filtered.length})</span>
+        {#if !isLoading}
+          <span class="text-gray-600 font-normal text-xs ml-1">({filtered.length})</span>
+        {/if}
       </h2>
       <button
         on:click={() => setChannelListOpen(false)}
-        class="w-7 h-7 flex items-center justify-center rounded-full bg-white/[0.06] hover:bg-white/10 text-gray-500 hover:text-white transition-all"
+        class="w-7 h-7 flex items-center justify-center rounded-full bg-white/[0.06] hover:bg-white/10 text-gray-500 hover:text-white transition-all active:scale-90"
         aria-label="Close"
       >
         <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -85,9 +90,10 @@
         bind:value={query}
         on:input={onSearchInput}
         placeholder="Search channels..."
+        disabled={isLoading}
         class="w-full bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-2 pl-9 text-sm text-white/70
                placeholder:text-gray-600 focus:outline-none focus:border-[#00ff33]/30 focus:ring-1 focus:ring-[#00ff33]/10
-               transition-all duration-200"
+               transition-all duration-200 disabled:opacity-40"
       />
       <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
@@ -95,15 +101,16 @@
     </div>
 
     <!-- Group Filters -->
-    {#if groups.length > 0}
+    {#if groups.length > 0 && !isLoading}
       <div class="flex gap-1.5 mt-3 overflow-x-auto pb-1 scrollbar-hide">
         {#each groups as group}
           <button
             on:click={() => setSelectedGroup(group === 'All' ? null : group)}
             class="flex-shrink-0 text-[10px] px-2.5 py-1 rounded-full border transition-all duration-200 whitespace-nowrap
                    {(selectedGroup === null && group === 'All') || selectedGroup === group
-                     ? 'bg-[#00ff33]/10 border-[#00ff33]/30 text-[#00ff33]'
-                     : 'bg-white/[0.03] border-white/[0.06] text-gray-500 hover:text-white/70 hover:border-white/20'}"
+                     ? 'bg-[#00ff33]/10 border-[#00ff33]/30 text-[#00ff33] shadow-[0_0_8px_rgba(0,255,51,0.08)]'
+                     : 'bg-white/[0.03] border-white/[0.06] text-gray-500 hover:text-white/70 hover:border-white/20'}
+                   active:scale-95 cursor-pointer"
           >
             {group}
           </button>
@@ -114,12 +121,41 @@
 
   <!-- Channel List -->
   <div class="flex-1 overflow-y-auto custom-scrollbar px-2 py-2">
-    {#if filtered.length === 0}
-      <div class="flex flex-col items-center justify-center h-full text-gray-600 text-sm gap-2">
-        <svg class="w-8 h-8 opacity-30" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    {#if isLoading}
+      <!-- Skeleton loading -->
+      <div class="space-y-1 px-1">
+        {#each Array(8) as _, i}
+          <div class="flex items-center gap-3 px-3 py-2.5 rounded-lg animate-pulse">
+            <div class="w-8 h-8 flex-shrink-0 rounded-md bg-white/[0.06]"></div>
+            <div class="flex-1 space-y-1.5">
+              <div class="h-3 w-3/4 rounded bg-white/[0.06]"></div>
+              <div class="h-2 w-1/3 rounded bg-white/[0.04]"></div>
+            </div>
+          </div>
+        {/each}
+      </div>
+    {:else if filtered.length === 0}
+      <div class="flex flex-col items-center justify-center h-full text-gray-600 text-sm gap-3 px-8">
+        <svg class="w-10 h-10 opacity-20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
         </svg>
-        No channels found
+        <span class="text-center">
+          {#if query}
+            No channels match "<span class="text-gray-500">{(query)}</span>"
+          {:else if selectedGroup}
+            No channels in this category
+          {:else}
+            Select a country to start watching
+          {/if}
+        </span>
+        {#if query || selectedGroup}
+          <button
+            on:click={() => { query = ''; setSearchQuery(''); setSelectedGroup(null); }}
+            class="text-[#00ff33]/60 hover:text-[#00ff33] text-xs underline underline-offset-2 transition-colors"
+          >
+            Clear filters
+          </button>
+        {/if}
       </div>
     {:else}
       {#each filtered as ch (ch.id)}
@@ -127,12 +163,13 @@
           on:click={() => selectChannel(ch)}
           class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group cursor-pointer
                  {channels[currentIndex]?.id === ch.id
-                   ? 'bg-[#00ff33]/8 border border-[#00ff33]/20'
-                   : 'hover:bg-white/[0.04] border border-transparent'}"
+                   ? 'bg-[#00ff33]/8 border border-[#00ff33]/20 shadow-[0_0_12px_rgba(0,255,51,0.04)]'
+                   : 'hover:bg-white/[0.04] border border-transparent hover:border-white/[0.06]'}
+                 active:scale-[0.99]"
         >
-          <!-- Logo -->
+          <!-- Logo / Icon -->
           {#if ch.logo}
-            <div class="w-8 h-8 flex-shrink-0 rounded-md bg-white/[0.04] overflow-hidden flex items-center justify-center">
+            <div class="w-8 h-8 flex-shrink-0 rounded-md bg-white/[0.04] overflow-hidden flex items-center justify-center ring-1 ring-white/[0.04]">
               <img
                 src={ch.logo}
                 alt=""
@@ -142,7 +179,7 @@
               />
             </div>
           {:else}
-            <div class="w-8 h-8 flex-shrink-0 rounded-md bg-gradient-to-br from-[#00ff33]/10 to-[#00ff33]/5 flex items-center justify-center">
+            <div class="w-8 h-8 flex-shrink-0 rounded-md bg-gradient-to-br from-[#00ff33]/10 to-[#00ff33]/5 flex items-center justify-center ring-1 ring-white/[0.04]">
               <span class="text-[#00ff33]/40 text-xs font-bold">TV</span>
             </div>
           {/if}
@@ -157,11 +194,14 @@
             {/if}
           </div>
 
-          <!-- Active indicator -->
+          <!-- Active indicator / Arrow -->
           {#if channels[currentIndex]?.id === ch.id}
-            <div class="w-1.5 h-1.5 rounded-full bg-[#00ff33] shadow-[0_0_6px_#00ff33] flex-shrink-0"></div>
+            <div class="flex items-center gap-1.5 flex-shrink-0">
+              <div class="w-1.5 h-1.5 rounded-full bg-[#00ff33] shadow-[0_0_6px_#00ff33]"></div>
+              <span class="text-[9px] text-[#00ff33]/50 font-mono hidden sm:inline">NOW</span>
+            </div>
           {:else}
-            <svg class="w-4 h-4 text-gray-700 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg class="w-4 h-4 text-gray-700 opacity-0 group-hover:opacity-100 transition-all duration-200 flex-shrink-0 -translate-x-1 group-hover:translate-x-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
             </svg>
           {/if}
@@ -172,7 +212,7 @@
 
   <!-- Footer -->
   <div class="flex-shrink-0 px-5 py-3 border-t border-white/[0.06] text-[10px] text-gray-700 flex items-center justify-between">
-    <span>{filtered.length} channels • {groups.length - 1} categories</span>
+    <span>{isLoading ? 'Loading...' : `${filtered.length} channels${groups.length > 1 ? ` · ${groups.length - 1} categories` : ''}`}</span>
     <span class="font-mono text-[9px]">ESC to close</span>
   </div>
 </div>

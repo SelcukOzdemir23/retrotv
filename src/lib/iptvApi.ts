@@ -8,10 +8,14 @@ import type { Country, ApiChannel, ApiStream, Channel } from './types';
 
 const API_BASE = 'https://iptv-org.github.io/api';
 
-// CORS proxy to bypass mixed-content blocking on HTTPS sites (GitHub Pages).
-// Stream URLs from IPTV-org are HTTP; on HTTPS pages they get blocked.
-// This proxies them through an HTTPS endpoint.
-const CORS_PROXY = 'https://corsproxy.io/?';
+// CORS proxy for HTTP streams on HTTPS pages (GitHub Pages).
+// HTTPS streams are used directly without proxy.
+const CORS_PROXY = 'https://corsproxy.io/';
+
+function proxyUrl(url: string): string {
+  if (url.startsWith('https://')) return url;
+  return CORS_PROXY + '?' + encodeURIComponent(url);
+}
 
 // ─── Caches ─────────────────────────────────────────────────────────
 
@@ -85,10 +89,8 @@ export async function fetchChannelsForCountry(countryCode: string): Promise<Chan
     if (s.channel && s.url && !streamMap.has(s.channel)) {
       // Prefer: higher quality, no label warning
       if (s.label && s.label.includes('Geo')) continue; // Skip geo-blocked if possible
-      // Wrap HTTP URLs through CORS proxy for HTTPS compatibility
-      const proxied = s.url.startsWith('http://')
-        ? CORS_PROXY + encodeURIComponent(s.url)
-        : s.url;
+      // Proxy HTTP URLs for CORS; keep HTTPS direct
+      const proxied = proxyUrl(s.url);
       streamMap.set(s.channel, proxied);
     }
   }
