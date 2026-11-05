@@ -1,6 +1,6 @@
 <script lang="ts">
   import { setApiKey, appStore } from '../../stores/appStore';
-  import { getTrending } from '../../lib/tmdbApi';
+  import { getTrending, setApiKey as setTmdbApiKey } from '../../lib/tmdbApi';
   import { setTrending, setTrendingLoading } from '../../stores/appStore';
   import Button from '../ui/Button.svelte';
 
@@ -20,10 +20,8 @@
     loading = true;
     error = '';
 
-    // Temporarily set the key to test it
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('tmdb_api_key', apiKeyInput.trim());
-    }
+    // Set the key in the tmdbApi module so getKey() finds it for the test call
+    setTmdbApiKey(apiKeyInput.trim());
 
     try {
       const items = await getTrending('all', 'week');
