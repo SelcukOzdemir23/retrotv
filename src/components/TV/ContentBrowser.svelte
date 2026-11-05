@@ -16,6 +16,9 @@
   let q = '';
   let debounce: ReturnType<typeof setTimeout>;
   let genreType: 'movie' | 'tv' = 'movie';
+  let yearFilter = '';
+  let ratingFilter = '';
+  let searching = false;
 
   onMount(async () => {
     if (s.trendingItems.length === 0) {
@@ -33,23 +36,36 @@
 
   function onSearch() {
     clearTimeout(debounce);
+    searching = true;
     debounce = setTimeout(async () => {
       const v = q.trim(); setSearchQuery(v);
-      if (!v) { setSearchResults([],1,0); return; }
+      if (!v) { setSearchResults([],1,0); searching = false; setSearchLoading(false); return; }
       setSearchLoading(true);
       try {
         const d = await searchMedia(v);
         setSearchResults(d.results.filter(r => r.media_type==='movie'||r.media_type==='tv'), d.page, d.total_pages);
         setBrowserTab('search');
       } catch {}
+      finally { searching = false; setSearchLoading(false); }
     }, 350);
+  }
+
+  function clearSearch() {
+    q = '';
+    setSearchQuery('');
+    setSearchResults([],1,0);
+    searching = false;
+    setSearchLoading(false);
   }
 
   async function pickGenre(id: number) {
     if (s.selectedGenre === id) { setSelectedGenre(null); setGenreItems([]); return; }
     setSelectedGenre(id); setGenreLoading(true); setBrowserTab('genres');
     try {
-      const d = genreType==='movie' ? await discoverMovies({with_genres:String(id)}) : await discoverTV({with_genres:String(id)});
+      const params: Record<string,string> = {with_genres:String(id)};
+      if (yearFilter) params[genreType==='movie' ? 'primary_release_year' : 'first_air_date_year'] = yearFilter;
+      if (ratingFilter) params['vote_average.gte'] = ratingFilter;
+      const d = genreType==='movie' ? await discoverMovies(params) : await discoverTV(params);
       setGenreItems(d.results);
     } catch {}
   }
@@ -76,7 +92,14 @@
     </div>
     <div class="cb-search">
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="cb-search-ic"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
-      <input type="text" bind:value={q} on:input={onSearch} placeholder="Search movies & TV shows..." class="cb-input"/>
+      <div class="cb-search-wrap">
+        <input type="text" bind:value={q} on:input={onSearch} placeholder="Search movies & TV shows..." class="cb-input"/>
+        {#if q.trim()}
+          <button on:click={clearSearch} class="cb-clear">✕</button>
+        {:else if searching}
+          <span class="cb-searching">…</span>
+        {/if}
+      </div>
     </div>
     <div class="cb-tabs">
       <button on:click={() => setBrowserTab('trending')} class="cb-tab" class:active={tab==='trending'}>Trending</button>
@@ -133,6 +156,11 @@
         <button on:click={() => {genreType='movie';if(s.selectedGenre)pickGenre(s.selectedGenre)}} class="cb-gtbtn" class:active={genreType==='movie'}>Movies</button>
         <button on:click={() => {genreType='tv';if(s.selectedGenre)pickGenre(s.selectedGenre)}} class="cb-gtbtn" class:active={genreType==='tv'}>TV Shows</button>
       </div>
+      <div class="cb-filters">
+        <input type="text" bind:value={yearFilter} placeholder="Yıl" class="cb-filter-input" maxlength="4"/>
+        <input type="text" bind:value={ratingFilter} placeholder="Min puan" class="cb-filter-input" maxlength="3"/>
+        <button on:click={() => {yearFilter=''; ratingFilter=''; if(s.selectedGenre) pickGenre(s.selectedGenre)}} class="cb-filter-reset">Sıfırla</button>
+      </div>
       <div class="cb-chips">
         {#each s.genres as g}
           <button on:click={() => pickGenre(g.id)} class="cb-chip" class:active={s.selectedGenre===g.id}>{g.name}</button>
@@ -186,6 +214,33 @@
   .cb-input { width: 100%; padding: 7px 10px 7px 28px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 4px; color: rgba(255,255,255,0.65); font-family: 'Space Grotesk', sans-serif; font-size: 11px; outline: none; transition: border-color 0.12s; }
   .cb-input::placeholder { color: rgba(255,255,255,0.15); }
   .cb-input:focus { border-color: rgba(0,255,51,0.2); }
+
+  .cb-search-wrap { position: relative; }
+  .cb-clear {
+    position: absolute; right: 7px; top: 50%; transform: translateY(-50%);
+    width: 20px; height: 20px; background: transparent; border: none;
+    color: rgba(255,255,255,0.3); cursor: pointer; font-size: 12px; display: flex; align-items: center; justify-content: center;
+  }
+  .cb-clear:hover { color: #00ff33; }
+  .cb-searching {
+    position: absolute; right: 7px; top: 50%; transform: translateY(-50%);
+    color: #00ff33; font-size: 12px; font-family: var(--ff-mono); animation: sp 0.8s linear infinite;
+  }
+
+  .cb-filters { display: flex; gap: 4px; margin-bottom: 6px; flex-wrap: wrap; }
+  .cb-filter-input {
+    flex: 1; min-width: 70px; padding: 3px 6px; border-radius: 3px;
+    border: 1px solid rgba(255,255,255,0.05); background: rgba(255,255,255,0.015);
+    color: rgba(255,255,255,0.65); font-family: 'IBM Plex Mono', monospace; font-size: 9px; outline: none;
+  }
+  .cb-filter-input::placeholder { color: rgba(255,255,255,0.2); }
+  .cb-filter-input:focus { border-color: rgba(0,255,51,0.2); }
+  .cb-filter-reset {
+    padding: 3px 8px; border-radius: 3px; border: 1px solid rgba(255,255,255,0.05);
+    background: rgba(255,255,255,0.015); color: rgba(255,255,255,0.3);
+    font-family: 'IBM Plex Mono', monospace; font-size: 8px; cursor: pointer; transition: all 0.1s;
+  }
+  .cb-filter-reset:hover { color: #00ff33; border-color: rgba(0,255,51,0.15); }
 
   .cb-tabs { display: flex; gap: 3px; }
   .cb-tab { padding: 4px 10px; border-radius: 3px; border: 1px solid rgba(255,255,255,0.05); background: rgba(255,255,255,0.015); color: rgba(255,255,255,0.3); font-family: 'Space Grotesk', sans-serif; font-size: 9px; font-weight: 500; cursor: pointer; transition: all 0.1s; }

@@ -13,10 +13,43 @@
     posterUrl, backdropUrl, getMediaTitle, getMediaYear, getVidkingUrl,
   } from '../../lib/types';
 
-  $: media = $appStore.selectedMedia;
-  $: detail = $appStore.mediaDetail;
-  $: isLoading = $appStore.mediaDetailLoading;
-  $: isPlaying = $appStore.isPlaying;
+  let media = $derived($appStore.selectedMedia);
+  let detail = $derived($appStore.mediaDetail);
+  let isLoading = $derived($appStore.mediaDetailLoading);
+  let isPlaying = $derived($appStore.isPlaying);
+
+// ─── Player state ───
+let playerCurrentTime = $state(0);
+let playerDuration = $state(120);
+let playerProgress = $derived(() => playerDuration > 0 ? (playerCurrentTime / playerDuration) * 100 : 0);
+let playerControlsVisible = $state(true);
+let controlsHideTimer: ReturnType<typeof setTimeout> | null = null;
+
+function formatTime(seconds: number): string {
+  const m = Math.floor(seconds / 60);
+  const s = Math.floor(seconds % 60);
+  return `${m}:${s.toString().padStart(2, '0')}`;
+}
+
+function showControls() {
+  playerControlsVisible = true;
+  if (controlsHideTimer) clearTimeout(controlsHideTimer);
+  controlsHideTimer = setTimeout(() => {
+    playerControlsVisible = false;
+  }, 3500);
+}
+
+function hideControls() {
+  playerControlsVisible = false;
+}
+
+function toggleControls() {
+  playerControlsVisible = !playerControlsVisible;
+}
+
+function seek(percent: number) {
+  playerCurrentTime = Math.max(0, Math.min(playerDuration, playerDuration * (percent / 100)));
+}
 
   let selectedSeason = 1;
   let selectedEpisode = 1;
@@ -95,7 +128,7 @@ let error: string | null = null;
 
     {#if isPlaying}
       <!-- ═══ PLAYER ═══ -->
-      <div class="player-wrap">
+      <div class="player-wrap" on:mousemove={showControls} on:mouseleave={hideControls}>
         <div class="player-box">
           <iframe
             src={media.media_type === 'movie'
@@ -106,10 +139,28 @@ let error: string | null = null;
             allowfullscreen
             allow="autoplay; encrypted-media"
           ></iframe>
+          <div class="player-crt-overlay"></div>
           <button on:click={() => stopPlaying()} class="back-pill" aria-label="Back">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
             Back
           </button>
+          <div class="player-controls" class:hidden={!playerControlsVisible}>
+            <div class="control-row">
+              <button class="btn-icon" on:click={toggleControls} title="Oynat/Durdur">⏯</button>
+              <span class="time-display">{formatTime(playerCurrentTime)} / {formatTime(playerDuration)}</span>
+              <button class="btn-icon" on:click={() => seek(0)} title="Başa sar">⏮</button>
+              <button class="btn-icon" on:click={() => seek(100)} title="İleri sar">⏭</button>
+              <button class="btn-icon" title="Tam ekran">⛶</button>
+            </div>
+            <div class="progress-bar">
+              <div class="progress-fill" style:width={playerProgress + '%'}></div>
+              <div class="progress-scrub" on:click={(e) => {
+                const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+                const percent = ((e.clientX - rect.left) / rect.width) * 100;
+                seek(percent);
+              }}></div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -261,6 +312,43 @@ let error: string | null = null;
 .player-iframe {
   width: 100%; height: 100%; border: 0; display: block;
 }
+
+.player-crt-overlay {
+  position: absolute; inset: 0; pointer-events: none; z-index: 20;
+  background:
+    linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%),
+    linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+  background-size: 100% 2px, 3px 100%;
+}
+
+.player-controls {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  background: linear-gradient(to top, rgba(0,0,0,0.85), transparent);
+  padding: 12px 16px; box-sizing: border-box; z-index: 25;
+  font-family: var(--ff-mono); font-size: 11px;
+}
+.player-controls.hidden { display: none; }
+
+.control-row {
+  display: flex; align-items: center; gap: 10px; margin-bottom: 6px;
+}
+.btn-icon {
+  width: 28px; height: 28px; border-radius: 4px;
+  border: 1px solid rgba(255,255,255,0.25); background: rgba(255,255,255,0.1);
+  color: var(--c-text); font-size: 14px; cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-family: var(--ff-mono);
+}
+.btn-icon:hover { background: rgba(0,255,51,0.15); border-color: var(--c-green); color: var(--c-green); }
+.time-display {
+  color: var(--c-text-muted); flex-shrink: 0; min-width: 70px; text-align: center;
+}
+
+.progress-bar {
+  height: 4px; background: rgba(255,255,255,0.15); border-radius: 2px; overflow: hidden; cursor: pointer;
+}
+.progress-fill { height: 100%; width: 0%; background: var(--c-green); transition: width 0.1s linear; }
+.progress-scrub { position: absolute; inset: 0; height: 100%; background: transparent; z-index: 1; }
 
 /* ═══ Episode tray (during playback) ═══ */
 .ep-tray { padding: var(--sp-md) var(--sp-lg); }
