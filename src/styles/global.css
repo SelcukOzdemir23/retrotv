@@ -1,8 +1,48 @@
 @import "tailwindcss";
+@import "./tokens.css";
 
 body {
     margin: 0;
-    background-color: #000;
-    color: #fff;
+    background-color: var(--c-bg);
+    color: var(--c-text);
+    font-family: var(--ff-ui);
     overflow: hidden;
+}
+
+/* Only Space Grotesk for UI text - nothing else */
+.ui-text {
+    font-family: var(--ff-ui);
+}
+
+.mono-text {
+    font-family: var(--ff-mono);
+}
+
+/* CRT/OSD monospace text */
+.crt-text {
+    font-family: var(--ff-crt);
+}
+
+/* Remove all AI slop glass morphism */
+.no-blur {
+    backdrop-filter: none !important;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+    width: 3px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: var(--c-green-dim);
+    border-radius: var(--r-sm);
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+    display: none;
+}
+.scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
 }

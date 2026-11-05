@@ -1,0 +1,85 @@
+/* src/styles/tokens.css — Broadcast Standard design tokens
+   Retro TV platform: flat, layered depth, no glass morphism, 4px spacing grid.
+   Single accent: fosforlu yeşil (#00ff33). */
+
+@layer base {
+  :root {
+    /* ── Renkler ── */
+    --c-bg: #0a0a0a;
+    --c-surface: #141414;
+    --c-surface-elev: rgba(255, 255, 255, 0.03);
+    --c-border: rgba(255, 255, 255, 0.08);
+    --c-border-focus: rgba(0, 255, 51, 0.35);
+    --c-border-green: rgba(0, 255, 51, 0.18);
+
+    --c-text: rgba(255, 255, 255, 0.90);
+    --c-text-dim: rgba(255, 255, 255, 0.45);
+    --c-text-muted: rgba(255, 255, 255, 0.25);
+    --c-text-inverse: #0a0a0a;
+
+    --c-green: #00ff33;
+    --c-green-dim: rgba(0, 255, 51, 0.08);
+    --c-green-border: rgba(0, 255, 51, 0.18);
+    --c-green-glow: rgba(0, 255, 51, 0.40);
+    --c-green-text: #00ff33;
+
+    --c-gold: rgba(255, 200, 50, 0.8);
+
+    --c-error: rgba(255, 80, 80, 0.85);
+    --c-error-dim: rgba(255, 80, 80, 0.10);
+    --c-error-border: rgba(255, 80, 80, 0.25);
+
+    /* ── Tipografi ── */
+    --ff-ui: 'Space Grotesk', system-ui, -apple-system, BlinkMacSystemFont,
+      'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    --ff-mono: 'IBM Plex Mono', 'SF Mono', 'Ubuntu Mono', 'Menlo', monospace;
+    --ff-crt: 'VT323', monospace;
+
+    --fs-xs: 0.75rem;   /* 12px */
+    --fs-sm: 0.875rem;  /* 14px */
+    --fs-base: 1rem;    /* 16px */
+    --fs-lg: 1.125rem;  /* 18px */
+    --fs-xl: 1.25rem;   /* 20px */
+    --fs-2xl: 1.5rem;   /* 24px */
+    --fs-3xl: 1.875rem; /* 30px */
+    --fs-4xl: 2.25rem;  /* 36px */
+    --fs-5xl: 3rem;     /* 48px */
+
+    --fw-normal: 400;
+    --fw-medium: 500;
+    --fw-semibold: 600;
+    --fw-bold: 700;
+
+    /* ── Boşluk (4px grid) ── */
+    --sp-0: 0;
+    --sp-1: 4px;
+    --sp-2: 8px;
+    --sp-3: 12px;
+    --sp-4: 16px;
+    --sp-5: 20px;
+    --sp-6: 24px;
+    --sp-8: 32px;
+    --sp-10: 40px;
+    --sp-12: 48px;
+    --sp-16: 64px;
+
+    /* ── Kenar yuvarlama ── */
+    --r-sm: 4px;
+    --r-md: 6px;
+    --r-lg: 8px;
+    --r-xl: 12px;
+    --r-full: 9999px;
+
+    /* ── Geçişler ── */
+    --t-fast: 150ms ease;
+    --t-base: 250ms ease;
+    --t-slow: 400ms ease;
+
+    /* ── Katmanlama ── */
+    --z-base: 10;
+    --z-dropdown: 20;
+    --z-modal: 50;
+    --z-toast: 60;
+    --z-crt: 100;
+  }
+}

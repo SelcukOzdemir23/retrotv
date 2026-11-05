@@ -4,34 +4,29 @@ import RoomBackground from "../components/RoomBackground.astro";
 import TVFrame from "../components/TV/TVFrame.astro";
 import Screen from "../components/TV/Screen.svelte";
 import RemoteControl from "../components/Remote/RemoteControl.svelte";
-import ChannelList from "../components/TV/ChannelList.svelte";
-import CountrySelect from "../components/TV/CountrySelect.svelte";
+import ContentBrowser from "../components/TV/ContentBrowser.svelte";
+import KeyGate from "../components/TV/KeyGate.svelte";
 ---
 
-<Layout title="RetroTV - Public IPTV Player">
+<Layout title="RetroTV — Movie & TV Streaming">
     <RoomBackground />
 
-    <!-- Rotate Device Overlay -->
+    <!-- Rotate Device Warning -->
     <div class="fixed inset-0 z-[100] bg-black text-white flex flex-col items-center justify-center p-8 text-center md:hidden portrait-warning">
         <div class="text-4xl mb-4">🔄</div>
-        <h2 class="text-xl font-bold font-serif tracking-widest mb-2">PLEASE ROTATE DEVICE</h2>
-        <p class="text-xs text-gray-500">EXPERIENCE OPTIMIZED FOR HORIZONTAL VIEW</p>
+        <h2 class="text-xl font-bold tracking-widest mb-2" style="font-family: 'Space Grotesk', sans-serif;">ROTATE DEVICE</h2>
+        <p class="text-xs text-gray-500" style="font-family: 'Space Grotesk', sans-serif;">Best experience in landscape</p>
     </div>
 
-    <main class="relative z-10 flex items-center justify-center min-h-screen w-full overflow-hidden">
-        <!-- Country Select (shown when no country selected) -->
-        <CountrySelect client:load />
+    <main class="relative z-10 flex items-center justify-center min-h-screen w-full px-4 py-6 md:py-10">
+        <KeyGate client:load>
+            <TVFrame>
+                <Screen client:load />
+            </TVFrame>
 
-        <!-- The TV -->
-        <TVFrame>
-            <Screen client:load />
-        </TVFrame>
-
-        <!-- Remote Control -->
-        <RemoteControl client:load />
-
-        <!-- Channel List Overlay -->
-        <ChannelList client:load />
+            <RemoteControl client:load />
+            <ContentBrowser client:load />
+        </KeyGate>
     </main>
 
     <style>

@@ -1,240 +1,169 @@
 <script lang="ts">
-  import { tvStore, togglePower, adjustVolume } from "../../stores/tvStore";
-  import { nextChannel, prevChannel, setCurrentChannelIndex, toggleChannelList, channelStore } from "../../stores/channelStore";
+  import { tvStore, togglePower } from "../../stores/tvStore";
+  import { appStore, setBrowserOpen, goBack, setView, setTrending, setTrendingLoading } from "../../stores/appStore";
+  import { getTrending } from "../../lib/tmdbApi";
 
-  $: store = $channelStore;
-  $: channels = store.channels;
-  $: currentIndex = store.currentIndex;
   $: isOn = $tvStore.power;
-  $: isLoading = store.isLoading;
+  $: view = $appStore.view;
+  let flash: string | null = null;
 
-  let displayNum = '--';
-
-  $: if (channels[currentIndex]) {
-    displayNum = String(currentIndex + 1).padStart(2, '0');
+  function tap(id: string, fn: () => void) {
+    flash = id; fn();
+    setTimeout(() => flash = null, 120);
   }
-
-  // Track button press for visual feedback
-  let pressedBtn: string | null = null;
-
-  function handlePress(btnName: string, action: () => void) {
-    pressedBtn = btnName;
-    action();
-    setTimeout(() => { pressedBtn = null; }, 150);
-  }
-
-  function handleNextChannel() {
-    if (!isOn) return;
-    nextChannel();
-  }
-
-  function handlePrevChannel() {
-    if (!isOn) return;
-    prevChannel();
-  }
-
-  function handleAdjustVolume(change: number) {
-    if (!isOn) return;
-    adjustVolume(change);
-  }
-
-  function handleSetChannel(idx: number) {
-    if (!isOn) return;
-    if (idx >= 0 && idx < channels.length) setCurrentChannelIndex(idx);
-  }
+  async function refresh() { if (!isOn) return; setTrendingLoading(true); try { setTrending(await getTrending('all','week')); } catch {} }
+  function browse() { if (isOn) setBrowserOpen(true); }
+  function home() { if (isOn) setView('home'); }
+  function back() { if (isOn && view !== 'home') goBack(); }
 </script>
 
-<div class="fixed bottom-5 right-5 md:bottom-10 md:right-10 z-50 select-none">
-  <div
-    class="bg-gradient-to-b from-[#1c1c1c] via-[#181818] to-[#141414] rounded-[20px] p-4 pt-3
-           shadow-[10px_10px_30px_rgba(0,0,0,0.8),inset_1px_1px_2px_rgba(255,255,255,0.08)]
-           border border-white/[0.06] w-36 md:w-44"
-  >
-    <!-- ── CHANNELS BROWSE BUTTON ── -->
-    <button
-      on:click={() => handlePress('browse', toggleChannelList)}
-      class="w-full flex items-center justify-between gap-2 px-3 py-2.5 mb-3
-             rounded-xl bg-[#00ff33]/8 border border-[#00ff33]/20
-             hover:bg-[#00ff33]/15 hover:border-[#00ff33]/35
-             active:scale-[0.97] transition-all duration-150 group cursor-pointer
-             focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00ff33]/30"
-      aria-label="Browse Channels"
-      class:scale-[0.97]={pressedBtn === 'browse'}
-    >
-      <div class="flex items-center gap-2">
-        <svg class="w-3.5 h-3.5 text-[#00ff33] group-hover:scale-110 transition-transform duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/>
-        </svg>
-        <span class="text-[11px] font-bold text-[#00ff33]/80 group-hover:text-[#00ff33] tracking-wider transition-colors">
-          BROWSE
-        </span>
-      </div>
-      <div class="flex items-center gap-1.5">
-        <span class="text-[9px] font-mono text-gray-500">{channels.length || '--'}</span>
-        <svg class="w-3 h-3 text-gray-600 group-hover:text-gray-400 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
-        </svg>
-      </div>
+<aside class="rc">
+  <div class="rc-body">
+    <!-- Top: Browse -->
+    <button on:click={() => tap('b', browse)} class="rc-browse" class:flash={flash==='b'} aria-label="Browse">
+      <span>BROWSE</span>
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5l7 7-7 7"/></svg>
     </button>
 
-    <!-- ── Brand / Display ── -->
-    <div class="flex items-center justify-between mb-3 px-1">
-      <div class="flex items-center gap-1.5">
-        <div class="w-2 h-2 rounded-full {isOn ? 'bg-[#00ff33] shadow-[0_0_4px_#00ff33]' : 'bg-gray-700'} transition-all duration-300"></div>
-        <span class="text-gray-600 text-[9px] tracking-[0.2em] font-bold">{isOn ? 'ON' : 'OFF'}</span>
+    <!-- Status bar -->
+    <div class="rc-status">
+      <span class="rc-led" class:on={isOn}></span>
+      <span class="rc-stxt">{isOn ? 'ON' : 'OFF'}</span>
+      <span class="rc-view">{view === 'home' ? 'HOME' : view === 'detail' ? 'INFO' : 'SRCH'}</span>
+    </div>
+
+    <!-- Power -->
+    <button on:click={() => tap('p', togglePower)} class="rc-power" class:flash={flash==='p'} aria-label="Power">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18.36 6.64a9 9 0 1 1-12.73 0M12 2v10"/></svg>
+    </button>
+
+    <!-- Nav grid -->
+    <div class="rc-grid">
+      <div class="rc-col">
+        <span class="rc-col-label">NAV</span>
+        <button on:click={() => tap('bk', back)} disabled={!isOn||view==='home'} class="rc-btn" class:flash={flash==='bk'} aria-label="Back">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 19l-7-7 7-7"/></svg>
+        </button>
+        <button on:click={() => tap('hm', home)} disabled={!isOn} class="rc-btn" class:flash={flash==='hm'} aria-label="Home">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+        </button>
       </div>
-      <div class="font-mono text-[10px] text-[#00ff33] osd-text bg-black/40 px-2 py-0.5 rounded transition-all duration-300">
-        {displayNum}
+      <div class="rc-col">
+        <span class="rc-col-label">TOOLS</span>
+        <button on:click={() => tap('rf', refresh)} disabled={!isOn} class="rc-btn" class:flash={flash==='rf'} aria-label="Refresh">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+        </button>
+        <button on:click={() => tap('mb', browse)} disabled={!isOn} class="rc-btn" class:flash={flash==='mb'} aria-label="Menu">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+        </button>
       </div>
     </div>
 
-    <!-- ── Power Button ── -->
-    <div class="flex justify-end items-center mb-4">
-      <button
-        on:click={() => handlePress('power', togglePower)}
-        class="w-8 h-8 md:w-10 md:h-10 rounded-full bg-gradient-to-b from-red-500 to-red-700
-               shadow-[inset_0_1px_3px_rgba(255,255,255,0.2),0_3px_6px_rgba(0,0,0,0.5)]
-               transition-all duration-100 flex items-center justify-center group
-               hover:from-red-400 hover:to-red-600
-               active:translate-y-[1px] active:shadow-none"
-        class:translate-y-[1px]={pressedBtn === 'power'}
-        aria-label="Power"
-      >
-        <svg class="w-4 h-4 md:w-5 md:h-5 text-white/80 group-hover:text-white transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
-        </svg>
+    <!-- Quick row -->
+    <div class="rc-quick">
+      <button on:click={() => tap('qh', home)} disabled={!isOn} class="rc-qbtn" class:flash={flash==='qh'} aria-label="Home">
+        <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+      </button>
+      <button on:click={() => tap('qb', browse)} disabled={!isOn} class="rc-qbtn" class:flash={flash==='qb'} aria-label="Browse">
+        <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+      </button>
+      <button on:click={() => tap('qr', refresh)} disabled={!isOn} class="rc-qbtn" class:flash={flash==='qr'} aria-label="Refresh">
+        <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6M1 20v-6h6"/></svg>
       </button>
     </div>
-
-    <!-- ── Channel / Volume ── -->
-    <div class="grid grid-cols-2 gap-4 mb-4">
-      <div class="flex flex-col items-center space-y-1.5">
-        <span class="text-gray-500 text-[9px] font-bold tracking-wider">CH</span>
-        <button
-          on:click={() => handlePress('ch+', handleNextChannel)}
-          disabled={!isOn}
-          class="remote-btn rounded-t-lg"
-          class:remote-btn-pressed={pressedBtn === 'ch+'}
-        >+</button>
-        <button
-          on:click={() => handlePress('ch-', handlePrevChannel)}
-          disabled={!isOn}
-          class="remote-btn rounded-b-lg"
-          class:remote-btn-pressed={pressedBtn === 'ch-'}
-        >-</button>
-      </div>
-
-      <div class="flex flex-col items-center space-y-1.5">
-        <span class="text-gray-500 text-[9px] font-bold tracking-wider">VOL</span>
-        <button
-          on:click={() => handlePress('vol+', () => handleAdjustVolume(10))}
-          disabled={!isOn}
-          class="remote-btn rounded-t-lg"
-          class:remote-btn-pressed={pressedBtn === 'vol+'}
-        >+</button>
-        <button
-          on:click={() => handlePress('vol-', () => handleAdjustVolume(-10))}
-          disabled={!isOn}
-          class="remote-btn rounded-b-lg"
-          class:remote-btn-pressed={pressedBtn === 'vol-'}
-        >-</button>
-      </div>
-    </div>
-
-    <!-- ── Number Pad ── -->
-    <div class="grid grid-cols-3 gap-1.5 mt-3">
-      {#each [1, 2, 3, 4, 5, 6, 7, 8, 9] as num}
-        <button
-          on:click={() => handlePress(`num-${num}`, () => handleSetChannel(num - 1))}
-          class="num-btn"
-          class:num-btn-pressed={pressedBtn === `num-${num}`}
-          disabled={!isOn || num > channels.length}
-        >{num}</button>
-      {/each}
-      <button
-        on:click={() => handlePress('num-0', () => handleSetChannel(9))}
-        class="num-btn col-start-2"
-        class:num-btn-pressed={pressedBtn === 'num-0'}
-        disabled={!isOn || 10 > channels.length}
-      >0</button>
-    </div>
   </div>
-</div>
+</aside>
 
 <style>
-  .remote-btn {
-    width: 100%;
-    height: 28px;
-    background: linear-gradient(180deg, #383838 0%, #2a2a2a 100%);
-    color: rgba(255, 255, 255, 0.85);
-    box-shadow:
-      0 3px 0 #111,
-      0 4px 6px rgba(0, 0, 0, 0.4);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: bold;
-    transition: all 0.08s ease;
-    border: none;
-    font-size: 13px;
-    cursor: pointer;
-    position: relative;
+  .rc {
+    position: fixed; bottom: 16px; right: 16px; z-index: 50;
   }
-  .remote-btn:hover {
-    background: linear-gradient(180deg, #404040 0%, #323232 100%);
-    color: white;
-  }
-  .remote-btn:active, .remote-btn-pressed {
-    box-shadow: 0 0 0 #111;
-    transform: translateY(3px);
-    background: linear-gradient(180deg, #2a2a2a 0%, #222 100%);
-  }
-  .remote-btn:disabled {
-    opacity: 0.25;
-    cursor: not-allowed;
-    box-shadow: 0 2px 0 #111;
-    transform: translateY(1px);
-  }
-  .remote-btn:disabled:hover {
-    background: linear-gradient(180deg, #383838 0%, #2a2a2a 100%);
-    color: rgba(255, 255, 255, 0.3);
+  @media (min-width: 768px) { .rc { bottom: 28px; right: 28px; } }
+
+  .rc-body {
+    width: 128px;
+    background: #161616;
+    border: 1px solid rgba(255,255,255,0.05);
+    border-radius: 16px;
+    padding: 10px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.04);
   }
 
-  .num-btn {
-    width: 100%;
-    aspect-ratio: 1;
-    background: linear-gradient(180deg, #2e2e2e 0%, #252525 100%);
-    color: rgba(255, 255, 255, 0.6);
-    font-family: ui-monospace, monospace;
-    font-size: 10px;
-    border-radius: 6px;
-    border: none;
-    box-shadow:
-      0 2px 0 #111,
-      0 3px 4px rgba(0, 0, 0, 0.3);
-    cursor: pointer;
-    transition: all 0.08s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+  /* Browse button */
+  .rc-browse {
+    width: 100%; display: flex; align-items: center; justify-content: space-between;
+    padding: 7px 9px; margin-bottom: 8px;
+    background: var(--c-green-dim, rgba(0,255,51,0.06));
+    border: 1px solid rgba(0,255,51,0.12);
+    border-radius: 7px; cursor: pointer; color: rgba(0,255,51,0.65);
+    font-family: 'Space Grotesk', sans-serif; font-size: 9px; font-weight: 600;
+    letter-spacing: 0.08em; transition: all 0.1s;
   }
-  .num-btn:hover {
-    background: linear-gradient(180deg, #3a3a3a 0%, #303030 100%);
-    color: rgba(255, 255, 255, 0.85);
+  .rc-browse:hover { background: rgba(0,255,51,0.1); }
+  .rc-browse.flash { transform: scale(0.97); }
+
+  /* Status */
+  .rc-status {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 8px; padding: 0 2px;
   }
-  .num-btn:active, .num-btn-pressed {
-    box-shadow: 0 0 0 #111;
-    transform: translateY(2px);
-    background: linear-gradient(180deg, #222 0%, #1a1a1a 100%);
+  .rc-led {
+    width: 5px; height: 5px; border-radius: 50%; background: #444; transition: all 0.3s;
   }
-  .num-btn:disabled {
-    opacity: 0.2;
-    cursor: not-allowed;
-    box-shadow: 0 1px 0 #111;
-    transform: translateY(1px);
+  .rc-led.on { background: #00ff33; box-shadow: 0 0 6px #00ff33; }
+  .rc-stxt { font-family: 'IBM Plex Mono', monospace; font-size: 7px; color: rgba(255,255,255,0.2); letter-spacing: 0.08em; }
+  .rc-view {
+    font-family: 'IBM Plex Mono', monospace; font-size: 7px; font-weight: 500;
+    color: rgba(0,255,51,0.35); background: rgba(0,0,0,0.3);
+    padding: 1px 5px; border-radius: 2px;
   }
-  .num-btn:disabled:hover {
-    background: linear-gradient(180deg, #2e2e2e 0%, #252525 100%);
-    color: rgba(255, 255, 255, 0.2);
+
+  /* Power */
+  .rc-power {
+    display: flex; justify-content: center; margin-bottom: 10px;
   }
+  .rc-power button, .rc-power {
+    width: 32px; height: 32px; border-radius: 50%;
+    background: linear-gradient(180deg, #b83b3b, #8a2a2a);
+    border: none; display: flex; align-items: center; justify-content: center;
+    cursor: pointer; color: rgba(255,255,255,0.65);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.3), inset 0 1px 1px rgba(255,255,255,0.1);
+    transition: all 0.08s; margin: 0 auto;
+  }
+  .rc-power:hover { background: linear-gradient(180deg, #c94545, #993333); }
+  .rc-power.flash { transform: translateY(1px); box-shadow: 0 1px 2px rgba(0,0,0,0.3); }
+
+  /* Nav grid */
+  .rc-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px;
+  }
+  .rc-col { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+  .rc-col-label {
+    font-family: 'IBM Plex Mono', monospace; font-size: 6px; font-weight: 500;
+    color: rgba(255,255,255,0.15); letter-spacing: 0.1em; margin-bottom: 1px;
+  }
+  .rc-btn {
+    width: 100%; height: 24px;
+    background: linear-gradient(180deg, #2e2e2e, #252525);
+    border: none; border-radius: 4px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; color: rgba(255,255,255,0.5);
+    box-shadow: 0 2px 0 #0e0e0e; transition: all 0.06s;
+  }
+  .rc-btn:hover { background: linear-gradient(180deg, #383838, #2e2e2e); color: rgba(255,255,255,0.7); }
+  .rc-btn.flash { transform: translateY(2px); box-shadow: none; }
+  .rc-btn:disabled { opacity: 0.18; cursor: default; }
+
+  /* Quick row */
+  .rc-quick { display: grid; grid-template-columns: repeat(3,1fr); gap: 3px; }
+  .rc-qbtn {
+    aspect-ratio: 1; background: linear-gradient(180deg, #262626, #1e1e1e);
+    border: none; border-radius: 4px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; color: rgba(255,255,255,0.35);
+    box-shadow: 0 1px 0 #0e0e0e; transition: all 0.06s;
+  }
+  .rc-qbtn:hover { background: linear-gradient(180deg, #303030, #282828); color: rgba(255,255,255,0.55); }
+  .rc-qbtn.flash { transform: translateY(1px); box-shadow: none; }
+  .rc-qbtn:disabled { opacity: 0.12; cursor: default; }
 </style>
