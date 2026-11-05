@@ -14,10 +14,11 @@
   import MediaDetail from "./MediaDetail.svelte";
   import Button from "../ui/Button.svelte";
   import type { TMDBMediaItem } from "../../lib/types";
-  import { backdropUrl, getMediaTitle, getMediaYear } from "../../lib/types";
+  import { backdropUrl, posterUrl, getMediaTitle, getMediaYear } from "../../lib/types";
 
   let turnOnAnim = false;
   let turnOffAnim = false;
+  let crtEnabled = true;
 
   $: isOn = $tvStore.power;
   $: view = $appStore.view;
@@ -84,7 +85,7 @@
   });
 </script>
 
-<div class="screen" class:flicker={$tvStore.power} class:turn-on-anim={turnOnAnim} class:turn-off-anim={turnOffAnim}>
+<div class="screen" class:crt-off={!crtEnabled} class:flicker={$tvStore.power} class:turn-on-anim={turnOnAnim} class:turn-off-anim={turnOffAnim}>
 
   {#if !$tvStore.power}
     <div class="standby">
@@ -93,6 +94,19 @@
   {/if}
 
   {#if $tvStore.power}
+    <header class="site-header">
+      <a class="wordmark" href="/" aria-label="RetroTV ana sayfa"><span class="wordmark-mark">R</span>RETRO<span class="wordmark-tv">TV</span></a>
+      <nav class="main-nav" aria-label="Ana menü">
+        <button class="nav-link active" on:click={() => setView('home')}>Ana Sayfa</button>
+        <button class="nav-link" on:click={() => setBrowserOpen(true)}>Keşfet</button>
+        <button class="nav-link" on:click={() => setBrowserOpen(true)}>Filmler ve Diziler</button>
+      </nav>
+      <button class="crt-toggle" class:enabled={crtEnabled} on:click={() => crtEnabled = !crtEnabled} aria-pressed={crtEnabled} aria-label={crtEnabled ? 'CRT efektlerini kapat' : 'CRT efektlerini aç'}>CRT</button>
+      <button class="header-search" on:click={() => setBrowserOpen(true)} aria-label="İçerik ara">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>
+        <span>Ara</span>
+      </button>
+    </header>
     <div class="content">
       {#if view === 'home' && !selectedMedia}
         <div class="home-scroll">
@@ -112,14 +126,14 @@
               <div class="hero-content">
                 <div class="hero-badge-row">
                   <div class="hero-live-dot"></div>
-                  <span class="osd-text">NOW SHOWING</span>
+                  <span class="osd-text">BU HAFTANIN ÖNE ÇIKANI</span>
                 </div>
 
                 <h1 class="hero-title">{getMediaTitle(featuredMedia)}</h1>
 
                 <div class="hero-meta">
                   <span class="meta-year">{getMediaYear(featuredMedia)}</span>
-                  <span class="meta-type">{featuredMedia.media_type === 'movie' ? 'MOVIE' : 'TV SERIES'}</span>
+                  <span class="meta-type">{featuredMedia.media_type === 'movie' ? 'FİLM' : 'DİZİ'}</span>
                   {#if featuredMedia.vote_average > 0}
                     <span class="meta-rating">★ {featuredMedia.vote_average.toFixed(1)}</span>
                   {/if}
@@ -132,13 +146,13 @@
                 <div class="hero-actions">
                   <Button onClick={selectFeatured} variant="primary" size="lg">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z" /></svg>
-                    <span>Watch Now</span>
+                    <span>İncele</span>
                   </Button>
                   <Button onClick={() => setBrowserOpen(true)} variant="ghost" size="lg">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
                       <path d="M4 6h16M4 10h16M4 14h16M4 18h16" />
                     </svg>
-                    <span>Browse</span>
+                    <span>Keşfet</span>
                   </Button>
                 </div>
               </div>
@@ -160,6 +174,33 @@
                 </div>
               {/if}
             </div>
+            {#if trendingItems.length > 1}
+              <section class="trending-section" aria-label="Trend içerikler">
+                <div class="section-heading">
+                  <div>
+                    <span class="section-kicker">ŞİMDİ POPÜLER</span>
+                    <h2>İzleyicilerin seçtikleri</h2>
+                  </div>
+                  <button class="see-all" on:click={() => setBrowserOpen(true)}>Tümünü gör <span aria-hidden="true">→</span></button>
+                </div>
+                <div class="poster-rail">
+                  {#each trendingItems.slice(1, 9) as item, i (item.id)}
+                    <button class="poster-card" on:click={() => selectMedia(item)} aria-label={`${getMediaTitle(item)} detaylarını aç`}>
+                      <span class="poster-image">
+                        {#if item.poster_path}
+                          <img src={posterUrl(item.poster_path, 'w342')} alt="" loading="lazy" />
+                        {:else}
+                          <span class="poster-placeholder">{getMediaTitle(item)}</span>
+                        {/if}
+                        <span class="poster-number">{String(i + 1).padStart(2, '0')}</span>
+                      </span>
+                      <span class="poster-title">{getMediaTitle(item)}</span>
+                      <span class="poster-meta">{getMediaYear(item)} · {item.media_type === 'movie' ? 'Film' : 'Dizi'}</span>
+                    </button>
+                  {/each}
+                </div>
+              </section>
+            {/if}
           {:else if trendingLoading}
             <div class="loading-wrap">
               <div class="loading-ring"></div>
@@ -178,11 +219,6 @@
         <StaticNoise />
       {/if}
 
-      {#if view === 'home' && !selectedMedia}
-        <div class="brand-mark pointer-events-none">
-          <span class="osd-text opacity-40">RETRO TV</span>
-        </div>
-      {/if}
     </div>
 
   {:else}
@@ -200,10 +236,10 @@
 <style>
   .screen {
     width: 100%;
-    height: 100%;
+    min-height: 100dvh;
     position: relative;
-    overflow: hidden;
-    background: #0a0a0a;
+    overflow: clip;
+    background: var(--c-bg);
   }
   .standby {
     position: absolute;
@@ -236,16 +272,15 @@
   }
 
   .content {
-    position: absolute;
-    inset: 0;
-    z-index: 10;
+    position: relative;
+    z-index: 1;
   }
 
   .home-scroll, .detail-scroll {
     width: 100%;
-    height: 100%;
-    overflow-y: auto;
-    overflow-x: hidden;
+    height: auto;
+    min-height: 100dvh;
+    overflow: visible;
   }
   .home-scroll::-webkit-scrollbar, .detail-scroll::-webkit-scrollbar { width: 3px; }
   .home-scroll::-webkit-scrollbar-thumb, .detail-scroll::-webkit-scrollbar-thumb {
@@ -257,27 +292,27 @@
   .hero {
     position: relative;
     width: 100%;
-    min-height: 100%;
+    min-height: min(820px, 92dvh);
+    height: min(820px, 92dvh);
+    background: #101310;
   }
   .hero-bg {
     position: absolute;
     inset: 0;
+    overflow: hidden;
   }
   .hero-img {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    object-position: center 35%;
   }
   .hero-gradient {
     position: absolute;
     inset: 0;
-    background: linear-gradient(
-      to top,
-      #0a0a0a 0%,
-      rgba(10, 10, 10, 0.85) 30%,
-      rgba(10, 10, 10, 0.4) 60%,
-      rgba(10, 10, 10, 0.6) 100%
-    );
+    background:
+      linear-gradient(90deg, rgba(9,10,9,.96) 0%, rgba(9,10,9,.78) 34%, rgba(9,10,9,.16) 74%, rgba(9,10,9,.12) 100%),
+      linear-gradient(0deg, var(--c-bg) 0%, transparent 25%, rgba(9,10,9,.18) 100%);
   }
   .hero-no-img {
     width: 100%;
@@ -290,12 +325,20 @@
     z-index: 10;
     display: flex;
     flex-direction: column;
-    justify-content: flex-end;
+    justify-content: center;
     min-height: 100%;
-    padding: 40px 36px 36px;
+    padding: 112px clamp(24px, 8vw, 124px) 76px;
+    max-width: 760px;
+    box-sizing: border-box;
   }
-  @media (min-width: 768px) {
-    .hero-content { padding: 48px 48px 40px; }
+  @media (max-width: 767px) {
+    .hero { height: min(760px, 88dvh); min-height: 590px; }
+    .hero-gradient {
+      background:
+        linear-gradient(0deg, var(--c-bg) 0%, rgba(9,10,9,.75) 34%, rgba(9,10,9,.08) 100%),
+        linear-gradient(90deg, rgba(9,10,9,.24), transparent);
+    }
+    .hero-content { justify-content: flex-end; padding: 100px 24px 74px; }
   }
 
   .hero-badge-row {
@@ -341,11 +384,11 @@
     font-family: 'IBM Plex Mono', monospace;
     font-size: 10px;
     font-weight: 600;
-    color: rgba(0, 255, 51, 0.6);
-    padding: 2px 8px;
-    background: rgba(0, 255, 51, 0.06);
-    border: 1px solid rgba(0, 255, 51, 0.12);
-    border-radius: 3px;
+    color: var(--c-green);
+    padding: 4px 9px;
+    background: rgba(0, 230, 56, 0.10);
+    border: 1px solid rgba(0, 230, 56, 0.22);
+    border-radius: 999px;
   }
   .meta-rating {
     font-family: 'IBM Plex Mono', monospace;
@@ -355,11 +398,11 @@
 
   .hero-desc {
     font-family: 'Space Grotesk', sans-serif;
-    font-size: 13px;
+    font-size: 15px;
     line-height: 1.65;
-    color: rgba(255, 255, 255, 0.35);
-    max-width: 520px;
-    margin: 0 0 20px 0;
+    color: rgba(255, 255, 255, 0.72);
+    max-width: 500px;
+    margin: 0 0 24px 0;
     display: -webkit-box;
     -webkit-line-clamp: 3;
     -webkit-box-orient: vertical;
@@ -430,6 +473,186 @@
     z-index: 20;
   }
 
+  .site-header {
+    position: absolute;
+    z-index: 30;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 76px;
+    padding: 0 clamp(22px, 5vw, 72px);
+    display: flex;
+    align-items: center;
+    gap: 52px;
+    background: linear-gradient(180deg, rgba(9,10,9,.82), transparent);
+  }
+  .wordmark {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: white;
+    text-decoration: none;
+    font-family: var(--ff-ui);
+    font-size: 17px;
+    font-weight: 700;
+    letter-spacing: -.07em;
+  }
+  .wordmark-mark {
+    width: 28px;
+    height: 28px;
+    display: grid;
+    place-items: center;
+    background: var(--c-green);
+    color: #071008;
+    font-size: 19px;
+    line-height: 1;
+    border-radius: 8px;
+  }
+  .wordmark-tv { color: var(--c-green); }
+  .main-nav { display: flex; align-items: center; gap: 30px; }
+  .nav-link {
+    border: 0;
+    padding: 8px 0;
+    background: none;
+    color: rgba(255,255,255,.68);
+    font-size: 14px;
+    cursor: pointer;
+    transition: color 160ms ease;
+  }
+  .nav-link:hover, .nav-link.active { color: white; }
+  .nav-link.active { box-shadow: inset 0 -2px var(--c-green); }
+  .header-search {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border: 1px solid rgba(255,255,255,.22);
+    border-radius: 999px;
+    padding: 9px 15px;
+    background: rgba(9,10,9,.38);
+    color: white;
+    cursor: pointer;
+  }
+  .header-search span { font-size: 13px; }
+  .crt-toggle {
+    border: 1px solid rgba(255,255,255,.18);
+    border-radius: 999px;
+    padding: 8px 11px;
+    background: transparent;
+    color: rgba(255,255,255,.64);
+    font: 11px var(--ff-mono);
+    cursor: pointer;
+  }
+  .crt-toggle.enabled { border-color: rgba(0,230,56,.4); color: var(--c-green); }
+  .screen.crt-off .crt-layer { display: none; }
+  .trending-section {
+    padding: 4px clamp(22px, 5vw, 72px) 80px;
+    background: var(--c-bg);
+  }
+  .section-heading {
+    display: flex;
+    align-items: end;
+    justify-content: space-between;
+    gap: 24px;
+    margin-bottom: 22px;
+  }
+  .section-kicker {
+    color: var(--c-green);
+    font-family: var(--ff-mono);
+    font-size: 10px;
+    letter-spacing: .12em;
+  }
+  .section-heading h2 {
+    margin: 5px 0 0;
+    font-size: clamp(22px, 2.4vw, 30px);
+    letter-spacing: -.04em;
+  }
+  .see-all {
+    border: 0;
+    background: none;
+    color: rgba(255,255,255,.68);
+    cursor: pointer;
+    white-space: nowrap;
+    font-size: 13px;
+  }
+  .see-all span { color: var(--c-green); padding-left: 5px; }
+  .poster-rail {
+    display: grid;
+    grid-template-columns: repeat(8, minmax(0, 1fr));
+    gap: 18px;
+  }
+  .poster-card {
+    min-width: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    text-align: left;
+    cursor: pointer;
+  }
+  .poster-image {
+    position: relative;
+    display: block;
+    aspect-ratio: 2 / 3;
+    overflow: hidden;
+    background: #171a17;
+    border-radius: 10px;
+    transition: transform 220ms ease, box-shadow 220ms ease;
+  }
+  .poster-card:hover .poster-image {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 32px rgba(0,0,0,.38);
+  }
+  .poster-image img { width: 100%; height: 100%; object-fit: cover; }
+  .poster-number {
+    position: absolute;
+    bottom: -9px;
+    left: 7px;
+    color: rgba(255,255,255,.9);
+    font-family: var(--ff-mono);
+    font-size: 26px;
+    font-weight: 600;
+    text-shadow: 0 2px 8px #000;
+  }
+  .poster-placeholder {
+    display: grid;
+    height: 100%;
+    place-items: center;
+    padding: 12px;
+    color: var(--c-text-dim);
+    text-align: center;
+  }
+  .poster-title {
+    display: block;
+    overflow: hidden;
+    margin-top: 14px;
+    color: rgba(255,255,255,.9);
+    font-size: 13px;
+    font-weight: 600;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .poster-meta { display: block; margin-top: 3px; color: var(--c-text-dim); font-size: 11px; }
+  @media (max-width: 900px) {
+    .poster-rail { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    .poster-card:nth-child(n + 5) { display: none; }
+    .main-nav { gap: 18px; }
+    .site-header { gap: 28px; }
+  }
+  @media (max-width: 600px) {
+    .site-header { height: 66px; padding: 0 18px; }
+    .main-nav { display: none; }
+    .header-search { padding: 8px; }
+    .header-search span { display: none; }
+    .hero-title { font-size: clamp(34px, 11vw, 48px); }
+    .hero-desc { font-size: 13px; }
+    .hero-arrows { display: none; }
+    .trending-section { padding: 0 18px 52px; }
+    .poster-rail { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+    .section-heading { align-items: center; }
+    .see-all { font-size: 12px; }
+  }
+
   /* ── Loading ───────────────────────────────────────────────── */
   .loading-wrap {
     width: 100%;
@@ -451,7 +674,7 @@
   .crt-layer {
     position: absolute;
     inset: 0;
-    z-index: 5;
+    z-index: 2;
     pointer-events: none;
   }
   .crt-layer > * {
@@ -462,21 +685,18 @@
     background: linear-gradient(to bottom,
       rgba(255,255,255,0),
       rgba(255,255,255,0) 50%,
-      rgba(0,0,0,0.5) 50%,
-      rgba(0,0,0,0.5));
-    background-size: 100% 3px;
+      rgba(0,0,0,0.14) 50%,
+      rgba(0,0,0,0.14));
+    background-size: 100% 4px;
+    opacity: .12;
   }
   :global(.tube-vignette) {
     background: radial-gradient(circle at center,
-      rgba(0,0,0,0) 55%,
-      rgba(0,0,0,0.5) 85%,
-      rgba(0,0,0,0.85) 100%);
+      rgba(0,0,0,0) 64%,
+      rgba(0,0,0,0.12) 100%);
   }
   :global(.glare) {
-    background: linear-gradient(135deg,
-      rgba(255,255,255,0.06) 0%,
-      rgba(255,255,255,0) 45%,
-      rgba(255,255,255,0.03) 100%);
+    display: none;
   }
 
   @keyframes pulse {
@@ -485,5 +705,9 @@
   }
   @keyframes spin {
     to { transform: rotate(360deg); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .hero-live-dot { animation: none; }
+    .poster-image, .nav-link { transition: none; }
   }
 </style>

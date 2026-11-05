@@ -377,35 +377,33 @@ let error: string | null = null;
 
 /* ── Hero ─────────────────────────────── */
 .d-hero {
-  position: relative; width: 100%; aspect-ratio: 2.2/1;
+  position: relative; width: 100%; aspect-ratio: auto;
   background: #111; overflow: hidden; flex-shrink: 0;
-  min-height: 180px;
+  height: clamp(360px, 58dvh, 620px);
 }
 .d-hero-bg { width: 100%; height: 100%; object-fit: cover; }
 .d-hero-ov {
   position: absolute; inset: 0;
-  background: linear-gradient(to top, var(--c-bg) 5%, rgba(10,10,10,0.4) 50%, rgba(10,10,10,0.6) 100%);
+  background: linear-gradient(90deg, rgba(9,10,9,.88), rgba(9,10,9,.22) 78%), linear-gradient(to top, var(--c-bg) 0%, transparent 52%, rgba(9,10,9,.2));
 }
 .d-hero-empty { width: 100%; height: 100%; background: #111; }
 
 .d-hero-info {
   position: absolute; bottom: 0; left: 0; right: 0;
-  padding: var(--sp-lg) var(--sp-lg); display: flex; align-items: flex-end; gap: var(--sp-md);
+  padding: 36px clamp(24px, 7vw, 96px); display: flex; align-items: flex-end; gap: 24px;
 }
-@media (min-width: 768px) { .d-hero-info { padding: var(--sp-lg) var(--sp-xl); } }
 
 .d-poster {
-  width: 64px; aspect-ratio: 2/3; border-radius: var(--r-md); overflow: hidden;
+  width: clamp(112px, 13vw, 176px); aspect-ratio: 2/3; border-radius: 10px; overflow: hidden;
   border: 1px solid var(--c-border); flex-shrink: 0;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.6);
+  box-shadow: 0 18px 50px rgba(0,0,0,0.42);
 }
 .d-poster img { width: 100%; height: 100%; object-fit: cover; }
 .d-hero-txt { flex: 1; min-width: 0; }
 .d-title {
-  font-family: var(--ff-ui); font-size: 20px; font-weight: 700;
-  color: rgba(255,255,255,0.92); line-height: 1.15; margin: 0 0 5px;
+  font-family: var(--ff-ui); font-size: clamp(32px, 5vw, 58px); font-weight: 700;
+  color: rgba(255,255,255,0.96); line-height: 1.02; letter-spacing: -.05em; margin: 0 0 12px;
 }
-@media (min-width: 768px) { .d-title { font-size: 26px; } }
 .d-meta { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .m-yr { font-family: var(--ff-mono); font-size: 11px; color: var(--c-text-dim); }
 .m-badge { font-family: var(--ff-mono); font-size: 9px; font-weight: 600; color: rgba(0,255,51,0.55); padding: 1px 6px; background: var(--c-green-dim); border: 1px solid var(--c-green-border); border-radius: 3px; }
@@ -413,26 +411,25 @@ let error: string | null = null;
 .m-rat { font-family: var(--ff-mono); font-size: 11px; color: var(--c-gold); }
 
 /* ── Body ─────────────────────────────── */
-.d-body { padding: var(--sp-lg); }
-@media (min-width: 768px) { .d-body { padding: var(--sp-lg) var(--sp-xl) var(--sp-xl); } }
+.d-body { width: calc(100% - 48px); max-width: 1120px; margin: 0 auto; padding: 28px 0 64px; }
 
 .d-genres { display: flex; gap: 5px; margin-bottom: var(--sp-md); flex-wrap: wrap; }
 .g-pill { font-family: var(--ff-mono); font-size: 10px; padding: 2px 8px; background: var(--c-surface); border: 1px solid var(--c-border); border-radius: 3px; color: var(--c-text-dim); }
 
 .d-overview {
-  font-family: var(--ff-ui); font-size: 13px; line-height: 1.7;
-  color: var(--c-text-dim); margin: 0 0 var(--sp-lg); max-width: 520px;
-  display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden;
+  font-family: var(--ff-ui); font-size: 15px; line-height: 1.75;
+  color: var(--c-text-dim); margin: 0 0 var(--sp-lg); max-width: 720px;
+  display: -webkit-box; -webkit-line-clamp: 5; -webkit-box-orient: vertical; overflow: hidden;
 }
 
 .d-play {
   display: inline-flex; align-items: center; gap: 8px;
-  padding: 11px 28px; border-radius: var(--r-md);
-  background: var(--c-green-dim); border: 1px solid var(--c-green-border);
-  color: var(--c-green); font-family: var(--ff-ui); font-size: 13px; font-weight: 600;
+  padding: 13px 28px; border-radius: 999px;
+  background: var(--c-green); border: 1px solid var(--c-green);
+  color: var(--c-text-inverse); font-family: var(--ff-ui); font-size: 14px; font-weight: 700;
   cursor: pointer; transition: all 0.15s; margin-bottom: var(--sp-lg);
 }
-.d-play:hover { background: rgba(0,255,51,0.14); border-color: rgba(0,255,51,0.3); }
+.d-play:hover { background: #00cf32; border-color: #00cf32; }
 
 .spin { width: 15px; height: 15px; border: 2px solid rgba(0,255,51,0.2); border-top-color: var(--c-green); border-radius: 50%; animation: sp 0.6s linear infinite; }
 

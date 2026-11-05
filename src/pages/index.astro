@@ -1,38 +1,15 @@
 ---
 import Layout from "../layouts/Layout.astro";
-import RoomBackground from "../components/RoomBackground.astro";
-import TVFrame from "../components/TV/TVFrame.astro";
 import Screen from "../components/TV/Screen.svelte";
-import RemoteControl from "../components/Remote/RemoteControl.svelte";
 import ContentBrowser from "../components/TV/ContentBrowser.svelte";
 import KeyGate from "../components/TV/KeyGate.svelte";
 ---
 
 <Layout title="RetroTV — Movie & TV Streaming">
-    <RoomBackground />
-
-    <!-- Rotate Device Warning -->
-    <div class="fixed inset-0 z-[100] bg-black text-white flex flex-col items-center justify-center p-8 text-center md:hidden portrait-warning">
-        <div class="text-4xl mb-4">🔄</div>
-        <h2 class="text-xl font-bold tracking-widest mb-2" style="font-family: 'Space Grotesk', sans-serif;">ROTATE DEVICE</h2>
-        <p class="text-xs text-gray-500" style="font-family: 'Space Grotesk', sans-serif;">Best experience in landscape</p>
-    </div>
-
-    <main class="relative z-10 flex items-center justify-center min-h-screen w-full px-4 py-6 md:py-10">
+    <main class="min-h-[100dvh] w-full">
         <KeyGate client:load>
-            <TVFrame>
-                <Screen client:load />
-            </TVFrame>
-
-            <RemoteControl client:load />
+            <Screen client:load />
             <ContentBrowser client:load />
         </KeyGate>
     </main>
-
-    <style>
-        .portrait-warning { display: none; }
-        @media (max-width: 768px) and (orientation: portrait) {
-            .portrait-warning { display: flex; }
-        }
-    </style>
 </Layout>

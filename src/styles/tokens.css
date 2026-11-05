@@ -5,22 +5,22 @@
 @layer base {
   :root {
     /* ── Renkler ── */
-    --c-bg: #0a0a0a;
-    --c-surface: #141414;
-    --c-surface-elev: rgba(255, 255, 255, 0.03);
-    --c-border: rgba(255, 255, 255, 0.08);
-    --c-border-focus: rgba(0, 255, 51, 0.35);
-    --c-border-green: rgba(0, 255, 51, 0.18);
+    --c-bg: #090a09;
+    --c-surface: #131513;
+    --c-surface-elev: #1b1e1b;
+    --c-border: rgba(255, 255, 255, 0.10);
+    --c-border-focus: rgba(0, 255, 51, 0.45);
+    --c-border-green: rgba(0, 255, 51, 0.22);
 
     --c-text: rgba(255, 255, 255, 0.90);
-    --c-text-dim: rgba(255, 255, 255, 0.45);
-    --c-text-muted: rgba(255, 255, 255, 0.25);
-    --c-text-inverse: #0a0a0a;
+    --c-text-dim: rgba(255, 255, 255, 0.64);
+    --c-text-muted: rgba(255, 255, 255, 0.42);
+    --c-text-inverse: #090a09;
 
-    --c-green: #00ff33;
-    --c-green-dim: rgba(0, 255, 51, 0.08);
-    --c-green-border: rgba(0, 255, 51, 0.18);
-    --c-green-glow: rgba(0, 255, 51, 0.40);
+    --c-green: #00e638;
+    --c-green-dim: rgba(0, 230, 56, 0.10);
+    --c-green-border: rgba(0, 230, 56, 0.22);
+    --c-green-glow: rgba(0, 230, 56, 0.24);
     --c-green-text: #00ff33;
 
     --c-gold: rgba(255, 200, 50, 0.8);
@@ -30,7 +30,7 @@
     --c-error-border: rgba(255, 80, 80, 0.25);
 
     /* ── Tipografi ── */
-    --ff-ui: 'Space Grotesk', system-ui, -apple-system, BlinkMacSystemFont,
+    --ff-ui: 'DM Sans', system-ui, -apple-system, BlinkMacSystemFont,
       'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
     --ff-mono: 'IBM Plex Mono', 'SF Mono', 'Ubuntu Mono', 'Menlo', monospace;
     --ff-crt: 'VT323', monospace;

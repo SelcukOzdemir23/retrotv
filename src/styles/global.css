@@ -6,7 +6,8 @@ body {
     background-color: var(--c-bg);
     color: var(--c-text);
     font-family: var(--ff-ui);
-    overflow: hidden;
+    overflow-x: hidden;
+    min-width: 320px;
 }
 
 /* Only Space Grotesk for UI text - nothing else */
@@ -23,9 +24,18 @@ body {
     font-family: var(--ff-crt);
 }
 
-/* Remove all AI slop glass morphism */
-.no-blur {
-    backdrop-filter: none !important;
+button, input {
+    font: inherit;
+}
+
+button:focus-visible, a:focus-visible, input:focus-visible {
+    outline: 2px solid var(--c-green);
+    outline-offset: 3px;
+}
+
+::selection {
+    color: var(--c-text-inverse);
+    background: var(--c-green);
 }
 
 .custom-scrollbar::-webkit-scrollbar {
@@ -45,4 +55,13 @@ body {
 .scrollbar-hide {
     -ms-overflow-style: none;
     scrollbar-width: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        scroll-behavior: auto !important;
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
 }
