@@ -11,7 +11,15 @@
     onToggleFavorite: (channelId: string) => void;
   }
 
-  let { channels, selectedId, favorites, loading, onSelect, onOpenSources, onToggleFavorite }: Props = $props();
+  let {
+    channels,
+    selectedId,
+    favorites,
+    loading,
+    onSelect,
+    onOpenSources,
+    onToggleFavorite,
+  }: Props = $props();
   let query = $state('');
   let selectedGroup = $state('all');
   let listElement = $state<HTMLDivElement>();
@@ -23,17 +31,20 @@
   const OVERSCAN = 6;
 
   let groups = $derived(
-    Array.from(new Set(channels.flatMap((channel) => channel.group ? [channel.group] : [])))
-      .sort((a, b) => a.localeCompare(b, 'tr')),
+    Array.from(new Set(channels.flatMap((channel) => (channel.group ? [channel.group] : [])))).sort(
+      (a, b) => a.localeCompare(b, 'tr'),
+    ),
   );
 
   // Kanal numarası playlist sırasıdır; arama veya grup filtresi numaraları değiştirmez.
   let channelNumbers = $derived(new Map(channels.map((channel, index) => [channel.id, index + 1])));
 
   // Arama metni playlist yüklenirken bir kez hazırlanır; her tuşta yeniden üretilmez.
-  let searchIndex = $derived(channels.map((channel) => (
-    `${channel.name} ${channel.group ?? ''} ${channel.tvgId ?? ''}`.toLocaleLowerCase('tr')
-  )));
+  let searchIndex = $derived(
+    channels.map((channel) =>
+      `${channel.name} ${channel.group ?? ''} ${channel.tvgId ?? ''}`.toLocaleLowerCase('tr'),
+    ),
+  );
 
   let filteredChannels = $derived.by(() => {
     const needle = query.trim().toLocaleLowerCase('tr');
@@ -51,10 +62,12 @@
 
   // Yalnızca görünen satırlar DOM'a girer: 10.000 kanallı bir playlist 40 düğümle açılır.
   let windowStart = $derived(Math.max(0, Math.floor(scrollTop / ROW_HEIGHT) - OVERSCAN));
-  let windowEnd = $derived(Math.min(
-    filteredChannels.length,
-    windowStart + Math.ceil(viewportHeight / ROW_HEIGHT) + OVERSCAN * 2,
-  ));
+  let windowEnd = $derived(
+    Math.min(
+      filteredChannels.length,
+      windowStart + Math.ceil(viewportHeight / ROW_HEIGHT) + OVERSCAN * 2,
+    ),
+  );
   let visibleChannels = $derived(filteredChannels.slice(windowStart, windowEnd));
 
   $effect(() => {
@@ -62,7 +75,9 @@
     if (!element) return;
 
     viewportHeight = element.clientHeight;
-    const observer = new ResizeObserver(() => { viewportHeight = element.clientHeight; });
+    const observer = new ResizeObserver(() => {
+      viewportHeight = element.clientHeight;
+    });
     observer.observe(element);
     return () => observer.disconnect();
   });
@@ -141,9 +156,13 @@
               aria-current={channel.id === selectedId ? 'true' : undefined}
               onclick={() => onSelect(channel)}
             >
-              <span class="channel-order">{String(channelNumbers.get(channel.id) ?? 0).padStart(3, '0')}</span>
+              <span class="channel-order"
+                >{String(channelNumbers.get(channel.id) ?? 0).padStart(3, '0')}</span
+              >
               <span class="channel-logo">
-                <span class="channel-initial" aria-hidden="true">{channel.name.slice(0, 1).toLocaleUpperCase('tr')}</span>
+                <span class="channel-initial" aria-hidden="true"
+                  >{channel.name.slice(0, 1).toLocaleUpperCase('tr')}</span
+                >
                 {#if channel.logoUrl}
                   <img
                     src={channel.logoUrl}
@@ -167,7 +186,9 @@
               type="button"
               class="favorite-button"
               class:favorite={favorites.includes(channel.id)}
-              aria-label={favorites.includes(channel.id) ? `${channel.name} favorilerden çıkar` : `${channel.name} favorilere ekle`}
+              aria-label={favorites.includes(channel.id)
+                ? `${channel.name} favorilerden çıkar`
+                : `${channel.name} favorilere ekle`}
               aria-pressed={favorites.includes(channel.id)}
               onclick={() => onToggleFavorite(channel.id)}
             >
@@ -175,7 +196,10 @@
             </button>
           </div>
         {/each}
-        <div class="virtual-spacer" style={`height: ${(filteredChannels.length - windowEnd) * ROW_HEIGHT}px`}></div>
+        <div
+          class="virtual-spacer"
+          style={`height: ${(filteredChannels.length - windowEnd) * ROW_HEIGHT}px`}
+        ></div>
       {:else}
         <p class="empty-list">Bu aramayla eşleşen kanal yok.</p>
       {/if}
@@ -185,7 +209,9 @@
   {:else}
     <div class="rail-empty">
       <p>Henüz kanal listesi yok.</p>
-      <p class="rail-empty-detail">Kendi M3U dosyanı aç, HTTPS bir playlist adresi gir ya da IPTV-org ülke dizininden başla.</p>
+      <p class="rail-empty-detail">
+        Kendi M3U dosyanı aç, HTTPS bir playlist adresi gir ya da IPTV-org ülke dizininden başla.
+      </p>
       <button type="button" onclick={onOpenSources}>Kaynak ekle</button>
     </div>
   {/if}
@@ -218,13 +244,13 @@
     margin: 0 0 7px;
     color: var(--c-accent);
     font: 600 11px/1 var(--ff-mono);
-    letter-spacing: .13em;
+    letter-spacing: 0.13em;
   }
   .rail-heading h2 {
     margin: 0;
     color: var(--c-text);
     font: 600 20px/1.1 var(--ff-display);
-    letter-spacing: -.035em;
+    letter-spacing: -0.035em;
   }
   .channel-count {
     min-width: 34px;
@@ -251,7 +277,9 @@
     color: var(--c-text);
     font: 13px var(--ff-ui);
   }
-  .channel-search::placeholder { color: var(--c-text-muted); }
+  .channel-search::placeholder {
+    color: var(--c-text-muted);
+  }
   .channel-list {
     flex: 1;
     min-height: 0;
@@ -266,9 +294,11 @@
     display: flex;
     align-items: stretch;
     gap: 2px;
-    border-bottom: 1px solid rgba(255,255,255,.045);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.045);
   }
-  .virtual-spacer { width: 1px; }
+  .virtual-spacer {
+    width: 1px;
+  }
   .channel-select {
     min-width: 0;
     flex: 1;
@@ -284,14 +314,20 @@
     text-align: left;
     cursor: pointer;
   }
-  .channel-select:hover { background: rgba(255,255,255,.045); }
-  .channel-select.active { background: color-mix(in srgb, var(--c-accent) 10%, transparent); }
-  .channel-select.active .channel-order { color: var(--c-accent); }
+  .channel-select:hover {
+    background: rgba(255, 255, 255, 0.045);
+  }
+  .channel-select.active {
+    background: color-mix(in srgb, var(--c-accent) 10%, transparent);
+  }
+  .channel-select.active .channel-order {
+    color: var(--c-accent);
+  }
   .channel-order {
     color: var(--c-text-subtle);
     font: 12px var(--ff-mono);
     font-variant-numeric: tabular-nums;
-    letter-spacing: .02em;
+    letter-spacing: 0.02em;
     text-align: right;
   }
   .channel-logo {
@@ -306,9 +342,22 @@
     color: var(--c-text-muted);
     font: 600 15px var(--ff-display);
   }
-  .channel-initial { text-transform: uppercase; }
-  .channel-logo img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; background: var(--c-surface-high); }
-  .channel-copy { min-width: 0; display: grid; gap: 4px; }
+  .channel-initial {
+    text-transform: uppercase;
+  }
+  .channel-logo img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    background: var(--c-surface-high);
+  }
+  .channel-copy {
+    min-width: 0;
+    display: grid;
+    gap: 4px;
+  }
   .channel-name {
     overflow: hidden;
     color: var(--c-text);
@@ -324,7 +373,11 @@
     text-overflow: ellipsis;
     white-space: nowrap;
   }
-  .live-marker { color: var(--c-accent); font: 600 10px var(--ff-mono); letter-spacing: .07em; }
+  .live-marker {
+    color: var(--c-accent);
+    font: 600 10px var(--ff-mono);
+    letter-spacing: 0.07em;
+  }
   .favorite-button {
     width: 34px;
     flex: 0 0 34px;
@@ -335,8 +388,13 @@
     font-size: 17px;
     cursor: pointer;
   }
-  .favorite-button:hover, .favorite-button.favorite { color: var(--c-accent); }
-  .empty-list, .rail-loading, .rail-empty {
+  .favorite-button:hover,
+  .favorite-button.favorite {
+    color: var(--c-accent);
+  }
+  .empty-list,
+  .rail-loading,
+  .rail-empty {
     padding: 20px 14px;
     color: var(--c-text-muted);
     font-size: 13px;
@@ -350,9 +408,17 @@
     justify-content: center;
     padding: 20px 18px 28px;
   }
-  .rail-empty p { margin: 0 0 13px; }
-  .rail-empty .rail-empty-detail { margin: 6px 0 16px; color: var(--c-text-subtle); font-size: 12px; line-height: 1.6; }
-  .rail-empty button, .rail-footer button {
+  .rail-empty p {
+    margin: 0 0 13px;
+  }
+  .rail-empty .rail-empty-detail {
+    margin: 6px 0 16px;
+    color: var(--c-text-subtle);
+    font-size: 12px;
+    line-height: 1.6;
+  }
+  .rail-empty button,
+  .rail-footer button {
     border: 0;
     background: transparent;
     color: var(--c-accent);
@@ -372,10 +438,16 @@
   @media (min-width: 761px) and (max-width: 1180px) {
     /* İki sütunlu düzende sayfa kayar; kanal listesi masa yüksekliğini aşmaz
        (68 topbar + 2×20 yerleşim boşluğu + 34 alt bilgi). */
-    .channel-rail { max-height: calc(100dvh - 142px); }
+    .channel-rail {
+      max-height: calc(100dvh - 142px);
+    }
   }
   @media (max-width: 760px) {
-    .channel-rail { max-height: 58dvh; }
-    .channel-list { max-height: 38dvh; }
+    .channel-rail {
+      max-height: 58dvh;
+    }
+    .channel-list {
+      max-height: 38dvh;
+    }
   }
 </style>

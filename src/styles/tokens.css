@@ -6,8 +6,8 @@
     --c-bg: #0b1014;
     --c-surface: #111a20;
     --c-surface-high: #19262d;
-    --c-border: rgba(220, 232, 235, .10);
-    --c-border-strong: rgba(220, 232, 235, .19);
+    --c-border: rgba(220, 232, 235, 0.1);
+    --c-border-strong: rgba(220, 232, 235, 0.19);
 
     --c-text: #f0f4f3;
     --c-text-muted: #9ba9ac;
@@ -16,8 +16,8 @@
     --c-accent: #ff604b;
     --c-accent-ink: #180b08;
     --c-danger: #ff9b88;
-    --c-danger-surface: rgba(255, 96, 75, .09);
-    --c-danger-border: rgba(255, 96, 75, .30);
+    --c-danger-surface: rgba(255, 96, 75, 0.09);
+    --c-danger-border: rgba(255, 96, 75, 0.3);
     --c-success: #72d6a0;
 
     --ff-display: 'Space Grotesk', system-ui, sans-serif;

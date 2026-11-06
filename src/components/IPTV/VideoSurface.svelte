@@ -28,7 +28,9 @@
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
     tuning = true;
-    const timer = setTimeout(() => { tuning = false; }, 280);
+    const timer = setTimeout(() => {
+      tuning = false;
+    }, 280);
     return () => clearTimeout(timer);
   });
 
@@ -51,22 +53,34 @@
     const selectedUrl = new URL(selectedChannel.url);
 
     if (selectedUrl.protocol === 'http:' && window.location.protocol === 'https:') {
-      report('unsupported', 'Tarayıcı, güvenli sayfada HTTP yayınları engeller. HTTPS yayın adresi kullan.');
+      report(
+        'unsupported',
+        'Tarayıcı, güvenli sayfada HTTP yayınları engeller. HTTPS yayın adresi kullan.',
+      );
       return;
     }
 
     if (selectedChannel.requiresDrm) {
-      report('unsupported', 'Bu yayın DRM lisansı istiyor. Tarayıcı oynatıcısı bu lisansı desteklemiyor.');
+      report(
+        'unsupported',
+        'Bu yayın DRM lisansı istiyor. Tarayıcı oynatıcısı bu lisansı desteklemiyor.',
+      );
       return;
     }
 
     if (selectedChannel.requiresCustomHeaders) {
-      report('unsupported', 'Bu yayın özel User-Agent veya Referer header’ı istiyor. Tarayıcı güvenlik nedeniyle bu header’ları ekleyemiyor.');
+      report(
+        'unsupported',
+        'Bu yayın özel User-Agent veya Referer header’ı istiyor. Tarayıcı güvenlik nedeniyle bu header’ları ekleyemiyor.',
+      );
       return;
     }
 
     const fail = () => {
-      report('error', 'Yayına ulaşılamadı. Adres bozuk olabilir, yayın kapalı olabilir veya kaynak CORS izni vermiyor olabilir.');
+      report(
+        'error',
+        'Yayına ulaşılamadı. Adres bozuk olabilir, yayın kapalı olabilir veya kaynak CORS izni vermiyor olabilir.',
+      );
     };
 
     report('loading');
@@ -118,7 +132,10 @@
     };
 
     if (selectedChannel.format === 'mpeg-ts') {
-      report('unsupported', 'Bu kaynak tek başına MPEG-TS dosyası. HLS manifesti (.m3u8) veya desteklenen MP4 yayını gerekir.');
+      report(
+        'unsupported',
+        'Bu kaynak tek başına MPEG-TS dosyası. HLS manifesti (.m3u8) veya desteklenen MP4 yayını gerekir.',
+      );
     } else if (selectedChannel.format === 'hls' && useManagedNativeHls) {
       video.src = selectedChannel.url;
     } else if (selectedChannel.format === 'hls') {
@@ -126,7 +143,10 @@
     } else if (selectedChannel.format === 'file') {
       video.src = selectedChannel.url;
     } else {
-      report('unsupported', 'Bu yayın türünü tanıyamadım. M3U kaynağında HLS (.m3u8) veya MP4 adresi kullan.');
+      report(
+        'unsupported',
+        'Bu yayın türünü tanıyamadım. M3U kaynağında HLS (.m3u8) veya MP4 adresi kullan.',
+      );
     }
 
     const onLoadedMetadata = () => startPlayback();
@@ -159,13 +179,17 @@
       <div class="surface-title">
         <span class="on-air" class:active={status === 'playing'} aria-hidden="true"></span>
         <div>
-          <p class="surface-kicker">{status === 'playing' ? 'YAYINDA' : status === 'loading' ? 'BAĞLANIYOR' : 'KANAL'}</p>
+          <p class="surface-kicker">
+            {status === 'playing' ? 'YAYINDA' : status === 'loading' ? 'BAĞLANIYOR' : 'KANAL'}
+          </p>
           <h1>{channel.name}</h1>
         </div>
       </div>
       <div class="surface-tags">
         <span class="channel-id">CH {String(number).padStart(3, '0')}</span>
-        <span class="format-tag">{channel.format === 'hls' ? 'HLS' : channel.format === 'file' ? 'VİDEO' : 'YAYIN'}</span>
+        <span class="format-tag"
+          >{channel.format === 'hls' ? 'HLS' : channel.format === 'file' ? 'VİDEO' : 'YAYIN'}</span
+        >
       </div>
     </header>
 
@@ -208,7 +232,9 @@
     </footer>
   {:else}
     <div class="empty-surface">
-      <div class="empty-signal" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span></div>
+      <div class="empty-signal" aria-hidden="true">
+        <span></span><span></span><span></span><span></span><span></span>
+      </div>
       <p class="surface-kicker">SİNYAL BEKLENİYOR</p>
       <h1>Bir kanal seç.</h1>
       <p class="empty-hint">Listeden seç, numarasını yaz (örn. 024) ya da ok tuşlarıyla gez.</p>
@@ -234,12 +260,17 @@
     justify-content: space-between;
     gap: 20px;
   }
-  .surface-title { display: flex; align-items: center; gap: 13px; min-width: 0; }
+  .surface-title {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    min-width: 0;
+  }
   .surface-kicker {
     margin: 0 0 4px;
     color: var(--c-accent);
     font: 600 11px/1 var(--ff-mono);
-    letter-spacing: .14em;
+    letter-spacing: 0.14em;
   }
   .surface-header h1 {
     overflow: hidden;
@@ -247,7 +278,7 @@
     margin: 0;
     color: var(--c-text);
     font: 600 clamp(20px, 2vw, 28px)/1.1 var(--ff-display);
-    letter-spacing: -.035em;
+    letter-spacing: -0.035em;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
@@ -262,7 +293,12 @@
     background: var(--c-accent);
     box-shadow: 0 0 14px color-mix(in srgb, var(--c-accent) 55%, transparent);
   }
-  .surface-tags { flex: 0 0 auto; display: flex; align-items: center; gap: 8px; }
+  .surface-tags {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
   .channel-id {
     padding: 6px 9px;
     border: 1px solid color-mix(in srgb, var(--c-accent) 42%, transparent);
@@ -270,7 +306,7 @@
     color: var(--c-text);
     font: 600 11px/1 var(--ff-mono);
     font-variant-numeric: tabular-nums;
-    letter-spacing: .08em;
+    letter-spacing: 0.08em;
   }
   .format-tag {
     flex: 0 0 auto;
@@ -300,7 +336,7 @@
     position: absolute;
     inset: 0;
     overflow: hidden;
-    background: rgba(5, 8, 10, .72);
+    background: rgba(5, 8, 10, 0.72);
     pointer-events: none;
     animation: tune-out 280ms ease-out forwards;
   }
@@ -310,7 +346,7 @@
     left: 0;
     right: 0;
     height: 34%;
-    background: linear-gradient(180deg, transparent, rgba(240, 244, 243, .14), transparent);
+    background: linear-gradient(180deg, transparent, rgba(240, 244, 243, 0.14), transparent);
     animation: tune-sweep 280ms linear;
   }
   .tune-readout {
@@ -319,10 +355,25 @@
     left: 16px;
     color: var(--c-text);
     font: 600 12px var(--ff-mono);
-    letter-spacing: .18em;
+    letter-spacing: 0.18em;
   }
-  @keyframes tune-out { 0%, 55% { opacity: 1 } 100% { opacity: 0 } }
-  @keyframes tune-sweep { from { transform: translateY(-100%) } to { transform: translateY(300%) } }
+  @keyframes tune-out {
+    0%,
+    55% {
+      opacity: 1;
+    }
+    100% {
+      opacity: 0;
+    }
+  }
+  @keyframes tune-sweep {
+    from {
+      transform: translateY(-100%);
+    }
+    to {
+      transform: translateY(300%);
+    }
+  }
   .status-overlay {
     position: absolute;
     inset: 0;
@@ -332,7 +383,7 @@
     justify-content: center;
     gap: 12px;
     padding: 24px;
-    background: rgba(5, 8, 10, .84);
+    background: rgba(5, 8, 10, 0.84);
     color: var(--c-text);
     text-align: center;
     pointer-events: none;
@@ -345,7 +396,9 @@
     border-radius: 50%;
     animation: spin 900ms linear infinite;
   }
-  .status-overlay.error { pointer-events: auto; }
+  .status-overlay.error {
+    pointer-events: auto;
+  }
   .status-symbol {
     width: 34px;
     height: 34px;
@@ -356,8 +409,16 @@
     color: var(--c-accent);
     font: 600 18px/1 var(--ff-mono);
   }
-  .status-overlay strong { font: 600 17px/1.2 var(--ff-display); }
-  .status-overlay p { max-width: 460px; margin: 0; color: var(--c-text-muted); font-size: 13px; line-height: 1.55; }
+  .status-overlay strong {
+    font: 600 17px/1.2 var(--ff-display);
+  }
+  .status-overlay p {
+    max-width: 460px;
+    margin: 0;
+    color: var(--c-text-muted);
+    font-size: 13px;
+    line-height: 1.55;
+  }
   .surface-footer {
     display: flex;
     justify-content: space-between;
@@ -378,19 +439,71 @@
     background: var(--c-surface);
     text-align: center;
   }
-  .empty-signal { height: 40px; display: flex; align-items: center; gap: 5px; margin-bottom: 26px; }
-  .empty-signal span { width: 3px; border-radius: 3px; background: var(--c-accent); opacity: .6; }
-  .empty-signal span:nth-child(1), .empty-signal span:nth-child(5) { height: 14px; }
-  .empty-signal span:nth-child(2), .empty-signal span:nth-child(4) { height: 27px; }
-  .empty-signal span:nth-child(3) { height: 40px; }
-  .empty-surface h1 { margin: 0; color: var(--c-text); font: 600 clamp(28px, 4vw, 42px)/1.1 var(--ff-display); letter-spacing: -.04em; }
-  .empty-hint { max-width: 400px; margin: 12px 0 0; color: var(--c-text-muted); font-size: 14px; line-height: 1.6; }
-  .empty-note { max-width: 400px; margin: 8px 0 0; color: var(--c-text-subtle); font-size: 12px; line-height: 1.55; }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  @media (prefers-reduced-motion: reduce) { .status-mark { animation: none; } }
+  .empty-signal {
+    height: 40px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin-bottom: 26px;
+  }
+  .empty-signal span {
+    width: 3px;
+    border-radius: 3px;
+    background: var(--c-accent);
+    opacity: 0.6;
+  }
+  .empty-signal span:nth-child(1),
+  .empty-signal span:nth-child(5) {
+    height: 14px;
+  }
+  .empty-signal span:nth-child(2),
+  .empty-signal span:nth-child(4) {
+    height: 27px;
+  }
+  .empty-signal span:nth-child(3) {
+    height: 40px;
+  }
+  .empty-surface h1 {
+    margin: 0;
+    color: var(--c-text);
+    font: 600 clamp(28px, 4vw, 42px)/1.1 var(--ff-display);
+    letter-spacing: -0.04em;
+  }
+  .empty-hint {
+    max-width: 400px;
+    margin: 12px 0 0;
+    color: var(--c-text-muted);
+    font-size: 14px;
+    line-height: 1.6;
+  }
+  .empty-note {
+    max-width: 400px;
+    margin: 8px 0 0;
+    color: var(--c-text-subtle);
+    font-size: 12px;
+    line-height: 1.55;
+  }
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .status-mark {
+      animation: none;
+    }
+  }
   @media (max-width: 640px) {
-    .video-surface { gap: 10px; }
-    .video-frame { margin-inline: -12px; width: calc(100% + 24px); border-radius: 0; }
-    .surface-footer { flex-direction: column; }
+    .video-surface {
+      gap: 10px;
+    }
+    .video-frame {
+      margin-inline: -12px;
+      width: calc(100% + 24px);
+      border-radius: 0;
+    }
+    .surface-footer {
+      flex-direction: column;
+    }
   }
 </style>

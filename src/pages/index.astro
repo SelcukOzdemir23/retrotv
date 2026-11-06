@@ -1,11 +1,13 @@
 ---
-import Layout from "../layouts/Layout.astro";
-import PlayerShell from "../components/IPTV/PlayerShell.svelte";
+import Layout from '../layouts/Layout.astro';
+import PlayerShell from '../components/IPTV/PlayerShell.svelte';
 ---
 
 <Layout title="RetroTV — IPTV Oynatıcı">
-    <a class="skip-link" href="#main-content">İçeriğe geç</a>
-    <main id="main-content" class="min-h-[100dvh] w-full">
-        <PlayerShell client:load />
-    </main>
+  <a class="skip-link" href="#main-content">
+    İçeriğe geç
+  </a>
+  <main id="main-content" class="min-h-[100dvh] w-full">
+    <PlayerShell client:load />
+  </main>
 </Layout>

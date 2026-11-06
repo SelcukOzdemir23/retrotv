@@ -25,10 +25,4 @@ export interface DirectoryCountry {
   flag: string;
 }
 
-export type PlaybackStatus =
-  | 'idle'
-  | 'loading'
-  | 'playing'
-  | 'paused'
-  | 'error'
-  | 'unsupported';
+export type PlaybackStatus = 'idle' | 'loading' | 'playing' | 'paused' | 'error' | 'unsupported';

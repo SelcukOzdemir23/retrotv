@@ -1,9 +1,4 @@
-import type {
-  Channel,
-  DirectoryCountry,
-  PlaylistParseResult,
-  StreamFormat,
-} from './types';
+import type { Channel, DirectoryCountry, PlaylistParseResult, StreamFormat } from './types';
 
 const IPTV_DIRECTORY_API = 'https://iptv-org.github.io/api';
 const IPTV_DIRECTORY_PLAYLISTS = 'https://iptv-org.github.io/iptv/countries';
@@ -167,14 +162,15 @@ export async function fetchDirectoryCountries(signal?: AbortSignal): Promise<Dir
 
   const result: unknown = await response.json();
   if (!Array.isArray(result)) throw new Error('Ülke dizini beklenmeyen formatta.');
-  return result.filter((item): item is DirectoryCountry => (
-    item !== null
-    && typeof item === 'object'
-    && typeof item.name === 'string'
-    && typeof item.code === 'string'
-    && Array.isArray(item.languages)
-    && typeof item.flag === 'string'
-  ));
+  return result.filter(
+    (item): item is DirectoryCountry =>
+      item !== null &&
+      typeof item === 'object' &&
+      typeof item.name === 'string' &&
+      typeof item.code === 'string' &&
+      Array.isArray(item.languages) &&
+      typeof item.flag === 'string',
+  );
 }
 
 export function getCountryPlaylistUrl(countryCode: string): string {
@@ -195,7 +191,9 @@ export async function fetchPlaylist(
   }
 
   if (parsedUrl.protocol !== 'https:') {
-    throw new Error('Uzak playlist adresi HTTPS olmalı. HTTP kaynakları güvenli sayfada engellenir.');
+    throw new Error(
+      'Uzak playlist adresi HTTPS olmalı. HTTP kaynakları güvenli sayfada engellenir.',
+    );
   }
 
   let response: Response;
@@ -203,7 +201,9 @@ export async function fetchPlaylist(
     response = await fetch(parsedUrl, { signal: options.signal });
   } catch (cause) {
     if (cause instanceof TypeError) {
-      throw new Error('Playlist kaynağına erişilemiyor. CORS iznini ve internet bağlantını kontrol et.');
+      throw new Error(
+        'Playlist kaynağına erişilemiyor. CORS iznini ve internet bağlantını kontrol et.',
+      );
     }
     throw cause;
   }
@@ -219,6 +219,7 @@ export async function fetchPlaylist(
   }
 
   const parsed = parseM3U(text, response.url || parsedUrl.href);
-  if (parsed.channels.length === 0) throw new Error('M3U dosyasında oynatılabilir kanal bulunamadı.');
+  if (parsed.channels.length === 0)
+    throw new Error('M3U dosyasında oynatılabilir kanal bulunamadı.');
   return parsed;
 }

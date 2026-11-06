@@ -1,55 +1,63 @@
-@import "tailwindcss";
-@import "./tokens.css";
+@import 'tailwindcss';
+@import './tokens.css';
 
 body {
-    margin: 0;
-    min-height: 100dvh;
-    background-color: var(--c-bg);
-    color: var(--c-text);
-    font-family: var(--ff-ui);
-    overflow-x: hidden;
-    min-width: 320px;
+  margin: 0;
+  min-height: 100dvh;
+  background-color: var(--c-bg);
+  color: var(--c-text);
+  font-family: var(--ff-ui);
+  overflow-x: hidden;
+  min-width: 320px;
 }
 
 .skip-link {
-    position: fixed;
-    z-index: 1000;
-    top: 12px;
-    left: 12px;
-    transform: translateY(-160%);
-    padding: 10px 14px;
-    border-radius: 6px;
-    background: var(--c-accent);
-    color: var(--c-accent-ink);
-    font-weight: 700;
-    text-decoration: none;
+  position: fixed;
+  z-index: 1000;
+  top: 12px;
+  left: 12px;
+  transform: translateY(-160%);
+  padding: 10px 14px;
+  border-radius: 6px;
+  background: var(--c-accent);
+  color: var(--c-accent-ink);
+  font-weight: 700;
+  text-decoration: none;
 }
 
 .skip-link:focus {
-    transform: translateY(0);
+  transform: translateY(0);
 }
 
-button, input, select {
-    font: inherit;
-    touch-action: manipulation;
-    -webkit-tap-highlight-color: transparent;
+button,
+input,
+select {
+  font: inherit;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
 }
 
-button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, [tabindex]:focus-visible {
-    outline: 2px solid var(--c-accent);
-    outline-offset: 3px;
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid var(--c-accent);
+  outline-offset: 3px;
 }
 
 ::selection {
-    color: var(--c-accent-ink);
-    background: var(--c-accent);
+  color: var(--c-accent-ink);
+  background: var(--c-accent);
 }
 
 @media (prefers-reduced-motion: reduce) {
-    *, *::before, *::after {
-        scroll-behavior: auto !important;
-        animation-duration: 0.01ms !important;
-        animation-iteration-count: 1 !important;
-        transition-duration: 0.01ms !important;
-    }
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
