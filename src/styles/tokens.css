@@ -1,85 +1,47 @@
-/* src/styles/tokens.css — Broadcast Standard design tokens
-   Retro TV platform: flat, layered depth, no glass morphism, 4px spacing grid.
-   Single accent: fosforlu yeşil (#00ff33). */
-
+/* RetroTV Signal Desk: deep ink, broadcast red, and readable control surfaces. */
 @layer base {
   :root {
-    /* ── Renkler ── */
-    --c-bg: #090a09;
-    --c-surface: #131513;
-    --c-surface-elev: #1b1e1b;
-    --c-border: rgba(255, 255, 255, 0.10);
-    --c-border-focus: rgba(0, 255, 51, 0.45);
-    --c-border-green: rgba(0, 255, 51, 0.22);
+    color-scheme: dark;
 
-    --c-text: rgba(255, 255, 255, 0.90);
-    --c-text-dim: rgba(255, 255, 255, 0.64);
-    --c-text-muted: rgba(255, 255, 255, 0.42);
-    --c-text-inverse: #090a09;
+    --c-bg: #0b1014;
+    --c-surface: #111a20;
+    --c-surface-high: #19262d;
+    --c-border: rgba(220, 232, 235, .10);
+    --c-border-strong: rgba(220, 232, 235, .19);
 
-    --c-green: #00e638;
-    --c-green-dim: rgba(0, 230, 56, 0.10);
-    --c-green-border: rgba(0, 230, 56, 0.22);
-    --c-green-glow: rgba(0, 230, 56, 0.24);
-    --c-green-text: #00ff33;
+    --c-text: #f0f4f3;
+    --c-text-muted: #9ba9ac;
+    --c-text-subtle: #7d8a8e;
 
-    --c-gold: rgba(255, 200, 50, 0.8);
+    --c-accent: #ff604b;
+    --c-accent-ink: #180b08;
+    --c-danger: #ff9b88;
+    --c-danger-surface: rgba(255, 96, 75, .09);
+    --c-danger-border: rgba(255, 96, 75, .30);
+    --c-success: #72d6a0;
 
-    --c-error: rgba(255, 80, 80, 0.85);
-    --c-error-dim: rgba(255, 80, 80, 0.10);
-    --c-error-border: rgba(255, 80, 80, 0.25);
+    --ff-display: 'Space Grotesk', system-ui, sans-serif;
+    --ff-ui: 'DM Sans', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    --ff-mono: 'IBM Plex Mono', 'SF Mono', 'Ubuntu Mono', monospace;
 
-    /* ── Tipografi ── */
-    --ff-ui: 'DM Sans', system-ui, -apple-system, BlinkMacSystemFont,
-      'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-    --ff-mono: 'IBM Plex Mono', 'SF Mono', 'Ubuntu Mono', 'Menlo', monospace;
-    --ff-crt: 'VT323', monospace;
+    --r-sm: 5px;
+    --r-md: 8px;
+    --r-lg: 10px;
+    --r-xl: 14px;
+    --r-full: 9999px;
 
-    --fs-xs: 0.75rem;   /* 12px */
-    --fs-sm: 0.875rem;  /* 14px */
-    --fs-base: 1rem;    /* 16px */
-    --fs-lg: 1.125rem;  /* 18px */
-    --fs-xl: 1.25rem;   /* 20px */
-    --fs-2xl: 1.5rem;   /* 24px */
-    --fs-3xl: 1.875rem; /* 30px */
-    --fs-4xl: 2.25rem;  /* 36px */
-    --fs-5xl: 3rem;     /* 48px */
-
-    --fw-normal: 400;
-    --fw-medium: 500;
-    --fw-semibold: 600;
-    --fw-bold: 700;
-
-    /* ── Boşluk (4px grid) ── */
-    --sp-0: 0;
     --sp-1: 4px;
     --sp-2: 8px;
     --sp-3: 12px;
     --sp-4: 16px;
-    --sp-5: 20px;
     --sp-6: 24px;
     --sp-8: 32px;
-    --sp-10: 40px;
     --sp-12: 48px;
-    --sp-16: 64px;
 
-    /* ── Kenar yuvarlama ── */
-    --r-sm: 4px;
-    --r-md: 6px;
-    --r-lg: 8px;
-    --r-xl: 12px;
-    --r-full: 9999px;
-
-    /* ── Geçişler ── */
-    --t-fast: 150ms ease;
-    --t-base: 250ms ease;
-    --t-slow: 400ms ease;
-
-    /* ── Katmanlama ── */
-    --z-base: 10;
+    --z-base: 1;
+    --z-header: 10;
     --z-dropdown: 20;
+    --z-overlay: 40;
     --z-modal: 50;
-    --z-toast: 60;
-    --z-crt: 100;
   }
 }

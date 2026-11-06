@@ -27,11 +27,14 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: "22.23.4"
           cache: npm
 
       - name: Install dependencies
         run: npm ci
+
+      - name: Check types and Astro diagnostics
+        run: npm run check
 
       - name: Build
         run: npm run build

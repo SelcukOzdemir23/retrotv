@@ -17,6 +17,10 @@ pnpm-debug.log*
 .env
 .env.production
 
+# Personal IPTV playlists can contain signed stream URLs or private headers
+*.m3u
+*.m3u8
+
 # macOS-specific files
 .DS_Store
 

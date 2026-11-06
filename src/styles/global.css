@@ -3,6 +3,7 @@
 
 body {
     margin: 0;
+    min-height: 100dvh;
     background-color: var(--c-bg);
     color: var(--c-text);
     font-family: var(--ff-ui);
@@ -10,51 +11,38 @@ body {
     min-width: 320px;
 }
 
-/* Only Space Grotesk for UI text - nothing else */
-.ui-text {
-    font-family: var(--ff-ui);
+.skip-link {
+    position: fixed;
+    z-index: 1000;
+    top: 12px;
+    left: 12px;
+    transform: translateY(-160%);
+    padding: 10px 14px;
+    border-radius: 6px;
+    background: var(--c-accent);
+    color: var(--c-accent-ink);
+    font-weight: 700;
+    text-decoration: none;
 }
 
-.mono-text {
-    font-family: var(--ff-mono);
+.skip-link:focus {
+    transform: translateY(0);
 }
 
-/* CRT/OSD monospace text */
-.crt-text {
-    font-family: var(--ff-crt);
-}
-
-button, input {
+button, input, select {
     font: inherit;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
 }
 
 button:focus-visible, a:focus-visible, input:focus-visible {
-    outline: 2px solid var(--c-green);
+    outline: 2px solid var(--c-accent);
     outline-offset: 3px;
 }
 
 ::selection {
-    color: var(--c-text-inverse);
-    background: var(--c-green);
-}
-
-.custom-scrollbar::-webkit-scrollbar {
-    width: 3px;
-}
-.custom-scrollbar::-webkit-scrollbar-track {
-    background: transparent;
-}
-.custom-scrollbar::-webkit-scrollbar-thumb {
-    background: var(--c-green-dim);
-    border-radius: var(--r-sm);
-}
-
-.scrollbar-hide::-webkit-scrollbar {
-    display: none;
-}
-.scrollbar-hide {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
+    color: var(--c-accent-ink);
+    background: var(--c-accent);
 }
 
 @media (prefers-reduced-motion: reduce) {

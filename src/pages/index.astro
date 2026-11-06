@@ -1,15 +1,11 @@
 ---
 import Layout from "../layouts/Layout.astro";
-import Screen from "../components/TV/Screen.svelte";
-import ContentBrowser from "../components/TV/ContentBrowser.svelte";
-import KeyGate from "../components/TV/KeyGate.svelte";
+import PlayerShell from "../components/IPTV/PlayerShell.svelte";
 ---
 
-<Layout title="RetroTV — Movie & TV Streaming">
-    <main class="min-h-[100dvh] w-full">
-        <KeyGate client:load>
-            <Screen client:load />
-            <ContentBrowser client:load />
-        </KeyGate>
+<Layout title="RetroTV — IPTV Oynatıcı">
+    <a class="skip-link" href="#main-content">İçeriğe geç</a>
+    <main id="main-content" class="min-h-[100dvh] w-full">
+        <PlayerShell client:load />
     </main>
 </Layout>
