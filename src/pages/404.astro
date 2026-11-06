@@ -1,0 +1,66 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+---
+
+<Layout title="RetroTV — Sayfa bulunamadı" description="Bu adreste bir sayfa yok.">
+  <main class="not-found">
+    <div class="not-found-card">
+      <p class="not-found-code">404</p>
+      <h1>Bu adreste kanal yok.</h1>
+      <p class="not-found-text">
+        Aradığın sayfa taşınmış ya da hiç var olmamış olabilir. Yayın masasına dönüp kanallarına
+        bakabilirsin.
+      </p>
+      <a class="not-found-link" href={`${base}/`}>
+        Yayın masasına dön
+      </a>
+    </div>
+  </main>
+</Layout>
+
+<style>
+  .not-found {
+    min-height: 100dvh;
+    display: grid;
+    place-items: center;
+    padding: 24px;
+    background: var(--c-bg);
+  }
+  .not-found-card {
+    width: min(100%, 480px);
+    padding: clamp(28px, 5vw, 44px);
+    border: 1px solid var(--c-border);
+    border-radius: 12px;
+    background: var(--c-surface);
+    text-align: left;
+  }
+  .not-found-code {
+    margin: 0 0 14px;
+    color: var(--c-accent);
+    font: 600 12px var(--ff-mono);
+    letter-spacing: 0.18em;
+  }
+  .not-found-card h1 {
+    margin: 0;
+    color: var(--c-text);
+    font: 600 clamp(26px, 4vw, 34px) / 1.1 var(--ff-display);
+    letter-spacing: -0.04em;
+  }
+  .not-found-text {
+    margin: 14px 0 24px;
+    color: var(--c-text-muted);
+    font-size: 14px;
+    line-height: 1.6;
+  }
+  .not-found-link {
+    display: inline-block;
+    padding: 11px 16px;
+    border-radius: 6px;
+    background: var(--c-accent);
+    color: var(--c-accent-ink);
+    font: 600 13px var(--ff-ui);
+    text-decoration: none;
+  }
+</style>

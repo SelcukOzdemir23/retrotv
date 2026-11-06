@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://selcukozdemir23.github.io/retrotv/sitemap-index.xml
