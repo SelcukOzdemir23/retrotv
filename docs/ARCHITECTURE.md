@@ -37,6 +37,13 @@ IPTV-org country┘                                          └─> hls.js for 
 
 - Switching channels plays one short `tune` overlay (channel number plus a sweep) over the video frame. It is decoration for a real state change, never a loading indicator, and it is skipped entirely under `prefers-reduced-motion: reduce`.
 
+### Channel rail rendering
+
+- The rail renders only the rows inside the viewport plus a small overscan window. Row height is a fixed 55px so the scroll maths stay exact, and the list reserves the full scroll height with two spacer elements.
+- `overflow-anchor: none` is required: browser scroll anchoring rewrote the scroll position whenever the rendered window changed and pushed the selected channel out of view.
+- The search haystack for every channel is built once when a playlist loads. Rebuilding it per keystroke cost about 80ms on a 15.000 channel playlist.
+- Selecting a channel from anywhere (number, arrow keys, click) scrolls the rail so that row is visible.
+
 ### UI responsibilities
 
 - `src/components/IPTV/PlayerShell.svelte` owns the active playlist, channel, source dialog, and user preferences.
@@ -44,6 +51,10 @@ IPTV-org country┘                                          └─> hls.js for 
 - `src/components/IPTV/ChannelRail.svelte` handles search, group filters, selection, and favorites.
 - `src/components/IPTV/VideoSurface.svelte` handles playback status and the video element.
 - `src/styles/tokens.css` is the source of truth for the signal-desk palette and typography.
+
+## Testing
+
+The M3U parser in `src/lib/iptv/playlist.ts` is pure and network-free, so `tests/playlist.test.ts` covers the real edge cases with `node:test`: quoted names containing commas, attribute parsing, `EXTGRP`/`EXTVLCOPT`/`KODIPROP` handling, format classification, duplicate URLs, id collisions, byte order marks, relative URLs, and empty playlists. Run it with `npm test`; it needs no dev server, browser, or extra dependency.
 
 ## Data handling and rights
 
