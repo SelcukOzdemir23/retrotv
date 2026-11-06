@@ -44,11 +44,12 @@ The app never uploads a local playlist to a server. Remote playlist and video re
 ## Quality checks
 
 ```sh
-npm run check
+npm run check   # types and Astro diagnostics
+npm test        # M3U parser unit tests (node:test)
 npm run build
 ```
 
-GitHub Actions runs both checks before publishing to GitHub Pages.
+GitHub Actions runs all three before publishing to GitHub Pages.
 
 ## Project structure
 

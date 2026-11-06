@@ -36,6 +36,9 @@ jobs:
       - name: Check types and Astro diagnostics
         run: npm run check
 
+      - name: Run unit tests
+        run: npm test
+
       - name: Build
         run: npm run build
 
