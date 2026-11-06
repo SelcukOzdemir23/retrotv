@@ -14,6 +14,13 @@
   let { channels, selectedId, favorites, loading, onSelect, onOpenSources, onToggleFavorite }: Props = $props();
   let query = $state('');
   let selectedGroup = $state('all');
+  let listElement = $state<HTMLDivElement>();
+  let scrollTop = $state(0);
+  let viewportHeight = $state(0);
+
+  // Satır yüksekliği CSS'te sabit; sanal liste bu sabitle hesaplar.
+  const ROW_HEIGHT = 55;
+  const OVERSCAN = 6;
 
   let groups = $derived(
     Array.from(new Set(channels.flatMap((channel) => channel.group ? [channel.group] : [])))
@@ -23,11 +30,68 @@
   // Kanal numarası playlist sırasıdır; arama veya grup filtresi numaraları değiştirmez.
   let channelNumbers = $derived(new Map(channels.map((channel, index) => [channel.id, index + 1])));
 
-  let filteredChannels = $derived(channels.filter((channel) => {
-    const matchesGroup = selectedGroup === 'all' || channel.group === selectedGroup;
-    const searchText = `${channel.name} ${channel.group ?? ''} ${channel.tvgId ?? ''}`.toLocaleLowerCase('tr');
-    return matchesGroup && searchText.includes(query.trim().toLocaleLowerCase('tr'));
-  }));
+  // Arama metni playlist yüklenirken bir kez hazırlanır; her tuşta yeniden üretilmez.
+  let searchIndex = $derived(channels.map((channel) => (
+    `${channel.name} ${channel.group ?? ''} ${channel.tvgId ?? ''}`.toLocaleLowerCase('tr')
+  )));
+
+  let filteredChannels = $derived.by(() => {
+    const needle = query.trim().toLocaleLowerCase('tr');
+    const matches: Channel[] = [];
+
+    for (let index = 0; index < channels.length; index += 1) {
+      const channel = channels[index];
+      if (selectedGroup !== 'all' && channel.group !== selectedGroup) continue;
+      if (needle && !searchIndex[index].includes(needle)) continue;
+      matches.push(channel);
+    }
+
+    return matches;
+  });
+
+  // Yalnızca görünen satırlar DOM'a girer: 10.000 kanallı bir playlist 40 düğümle açılır.
+  let windowStart = $derived(Math.max(0, Math.floor(scrollTop / ROW_HEIGHT) - OVERSCAN));
+  let windowEnd = $derived(Math.min(
+    filteredChannels.length,
+    windowStart + Math.ceil(viewportHeight / ROW_HEIGHT) + OVERSCAN * 2,
+  ));
+  let visibleChannels = $derived(filteredChannels.slice(windowStart, windowEnd));
+
+  $effect(() => {
+    const element = listElement;
+    if (!element) return;
+
+    viewportHeight = element.clientHeight;
+    const observer = new ResizeObserver(() => { viewportHeight = element.clientHeight; });
+    observer.observe(element);
+    return () => observer.disconnect();
+  });
+
+  $effect(() => {
+    // Arama veya grup değişince liste başa döner.
+    query;
+    selectedGroup;
+    if (!listElement) return;
+    listElement.scrollTop = 0;
+    scrollTop = 0;
+  });
+
+  $effect(() => {
+    // Klavyeyle veya numarayla seçilen kanal listenin görünen alanına gelir.
+    const currentId = selectedId;
+    const element = listElement;
+    if (!currentId || !element) return;
+
+    const index = filteredChannels.findIndex((channel) => channel.id === currentId);
+    if (index < 0) return;
+
+    const rowTop = index * ROW_HEIGHT;
+    const rowBottom = rowTop + ROW_HEIGHT;
+    if (rowTop < element.scrollTop) element.scrollTop = rowTop;
+    else if (rowBottom > element.scrollTop + element.clientHeight) {
+      element.scrollTop = rowBottom - element.clientHeight;
+    }
+  });
 </script>
 
 <aside class="channel-rail" aria-label="Kanal listesi">
@@ -61,9 +125,15 @@
       {/if}
     </div>
 
-    <div class="channel-list" aria-label="Kanallar">
-      {#if filteredChannels.length > 0}
-        {#each filteredChannels as channel (channel.id)}
+    <div
+      class="channel-list"
+      aria-label="Kanallar"
+      bind:this={listElement}
+      onscroll={(event) => (scrollTop = event.currentTarget.scrollTop)}
+    >
+      {#if visibleChannels.length > 0}
+        <div class="virtual-spacer" style={`height: ${windowStart * ROW_HEIGHT}px`}></div>
+        {#each visibleChannels as channel (channel.id)}
           <div class="channel-row" class:active={channel.id === selectedId}>
             <button
               class="channel-select"
@@ -105,6 +175,7 @@
             </button>
           </div>
         {/each}
+        <div class="virtual-spacer" style={`height: ${(filteredChannels.length - windowEnd) * ROW_HEIGHT}px`}></div>
       {:else}
         <p class="empty-list">Bu aramayla eşleşen kanal yok.</p>
       {/if}
@@ -185,15 +256,19 @@
     flex: 1;
     min-height: 0;
     overflow-y: auto;
+    /* Sanal liste kaydırma konumunu kendi hesaplar; tarayıcı çapa ayarı onu bozar. */
+    overflow-anchor: none;
     padding: 4px 9px 10px;
     overscroll-behavior: contain;
   }
   .channel-row {
+    height: 55px;
     display: flex;
     align-items: stretch;
     gap: 2px;
     border-bottom: 1px solid rgba(255,255,255,.045);
   }
+  .virtual-spacer { width: 1px; }
   .channel-select {
     min-width: 0;
     flex: 1;
