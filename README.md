@@ -35,6 +35,12 @@ npm run dev
 
 The app never uploads a local playlist to a server. Remote playlist and video requests go directly from the browser to their respective sources. Remote servers must allow browser CORS requests; secure deployments also require HTTPS streams. Do not share playlist URLs containing credentials or signed query parameters.
 
+## Keyboard
+
+- Type a channel number (up to three digits) to jump to it; `Enter` confirms before the third digit
+- `ArrowUp` / `ArrowDown` step through the playlist
+- `Esc` closes the source dialog or cancels a half-typed channel number
+
 ## Quality checks
 
 ```sh

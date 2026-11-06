@@ -4,19 +4,33 @@
 
   interface Props {
     channel: Channel | null;
+    number: number;
     onPlaybackStatus: (status: PlaybackStatus, message: string) => void;
   }
 
-  let { channel, onPlaybackStatus }: Props = $props();
+  let { channel, number, onPlaybackStatus }: Props = $props();
   let videoElement = $state<HTMLVideoElement>();
   let status = $state<PlaybackStatus>('idle');
   let message = $state('');
+  let tuning = $state(false);
 
   function report(nextStatus: PlaybackStatus, nextMessage = '') {
     status = nextStatus;
     message = nextMessage;
     onPlaybackStatus(nextStatus, nextMessage);
   }
+
+  // Kanal değişiminde kısa bir "tune" geçişi: yayın masasında kanal değiştirme anı.
+  // Hareket azaltma tercihinde tamamen atlanır.
+  $effect(() => {
+    const currentId = channel?.id;
+    if (!currentId) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    tuning = true;
+    const timer = setTimeout(() => { tuning = false; }, 280);
+    return () => clearTimeout(timer);
+  });
 
   $effect(() => {
     const selectedChannel = channel;
@@ -149,7 +163,10 @@
           <h1>{channel.name}</h1>
         </div>
       </div>
-      <span class="format-tag">{channel.format === 'hls' ? 'HLS' : channel.format === 'file' ? 'VİDEO' : 'YAYIN'}</span>
+      <div class="surface-tags">
+        <span class="channel-id">CH {String(number).padStart(3, '0')}</span>
+        <span class="format-tag">{channel.format === 'hls' ? 'HLS' : channel.format === 'file' ? 'VİDEO' : 'YAYIN'}</span>
+      </div>
     </header>
 
     <div class="video-frame">
@@ -161,6 +178,15 @@
         aria-label={`${channel.name} canlı yayını`}
         onpause={() => status === 'playing' && report('paused')}
       ></video>
+
+      {#if tuning}
+        {#key channel.id}
+          <div class="tune" aria-hidden="true">
+            <span class="tune-sweep"></span>
+            <span class="tune-readout">CH {String(number).padStart(3, '0')}</span>
+          </div>
+        {/key}
+      {/if}
 
       {#if status === 'loading'}
         <div class="status-overlay" aria-live="polite">
@@ -185,7 +211,8 @@
       <div class="empty-signal" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span></div>
       <p class="surface-kicker">SİNYAL BEKLENİYOR</p>
       <h1>Bir kanal seç.</h1>
-      <p>Yayın, kaynağın erişilebilirliğine ve tarayıcı desteğine bağlıdır.</p>
+      <p class="empty-hint">Listeden seç, numarasını yaz (örn. 024) ya da ok tuşlarıyla gez.</p>
+      <p class="empty-note">Yayın, kaynağın erişilebilirliğine ve tarayıcı desteğine bağlıdır.</p>
     </div>
   {/if}
 </section>
@@ -193,6 +220,8 @@
 <style>
   .video-surface {
     min-width: 0;
+    flex: 1;
+    min-height: 0;
     display: flex;
     flex-direction: column;
     gap: 14px;
@@ -209,7 +238,7 @@
   .surface-kicker {
     margin: 0 0 4px;
     color: var(--c-accent);
-    font: 600 10px/1 var(--ff-mono);
+    font: 600 11px/1 var(--ff-mono);
     letter-spacing: .14em;
   }
   .surface-header h1 {
@@ -233,13 +262,23 @@
     background: var(--c-accent);
     box-shadow: 0 0 14px color-mix(in srgb, var(--c-accent) 55%, transparent);
   }
+  .surface-tags { flex: 0 0 auto; display: flex; align-items: center; gap: 8px; }
+  .channel-id {
+    padding: 6px 9px;
+    border: 1px solid color-mix(in srgb, var(--c-accent) 42%, transparent);
+    border-radius: 5px;
+    color: var(--c-text);
+    font: 600 11px/1 var(--ff-mono);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: .08em;
+  }
   .format-tag {
     flex: 0 0 auto;
     padding: 6px 9px;
     border: 1px solid var(--c-border);
     border-radius: 5px;
     color: var(--c-text-muted);
-    font: 500 10px/1 var(--ff-mono);
+    font: 500 11px/1 var(--ff-mono);
   }
   .video-frame {
     position: relative;
@@ -257,6 +296,33 @@
     background: #05080a;
     object-fit: contain;
   }
+  .tune {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    background: rgba(5, 8, 10, .72);
+    pointer-events: none;
+    animation: tune-out 280ms ease-out forwards;
+  }
+  .tune-sweep {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 34%;
+    background: linear-gradient(180deg, transparent, rgba(240, 244, 243, .14), transparent);
+    animation: tune-sweep 280ms linear;
+  }
+  .tune-readout {
+    position: absolute;
+    top: 14px;
+    left: 16px;
+    color: var(--c-text);
+    font: 600 12px var(--ff-mono);
+    letter-spacing: .18em;
+  }
+  @keyframes tune-out { 0%, 55% { opacity: 1 } 100% { opacity: 0 } }
+  @keyframes tune-sweep { from { transform: translateY(-100%) } to { transform: translateY(300%) } }
   .status-overlay {
     position: absolute;
     inset: 0;
@@ -297,11 +363,11 @@
     justify-content: space-between;
     gap: 12px;
     color: var(--c-text-muted);
-    font: 11px/1.4 var(--ff-mono);
+    font: 12px/1.4 var(--ff-mono);
   }
   .empty-surface {
+    flex: 1;
     min-height: 360px;
-    height: 100%;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -318,7 +384,8 @@
   .empty-signal span:nth-child(2), .empty-signal span:nth-child(4) { height: 27px; }
   .empty-signal span:nth-child(3) { height: 40px; }
   .empty-surface h1 { margin: 0; color: var(--c-text); font: 600 clamp(28px, 4vw, 42px)/1.1 var(--ff-display); letter-spacing: -.04em; }
-  .empty-surface > p:last-child { max-width: 390px; margin: 12px 0 0; color: var(--c-text-muted); font-size: 14px; line-height: 1.6; }
+  .empty-hint { max-width: 400px; margin: 12px 0 0; color: var(--c-text-muted); font-size: 14px; line-height: 1.6; }
+  .empty-note { max-width: 400px; margin: 8px 0 0; color: var(--c-text-subtle); font-size: 12px; line-height: 1.55; }
   @keyframes spin { to { transform: rotate(360deg); } }
   @media (prefers-reduced-motion: reduce) { .status-mark { animation: none; } }
   @media (max-width: 640px) {

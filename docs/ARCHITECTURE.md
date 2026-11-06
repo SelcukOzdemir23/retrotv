@@ -27,6 +27,16 @@ IPTV-org country┘                                          └─> hls.js for 
 - HLS manifests, segments, encryption keys, and related resources must all meet the source server's CORS policy.
 - DRM, forbidden request headers, insecure HTTP from the HTTPS site, and raw MPEG-TS are surfaced as unsupported instead of being proxied or bypassed.
 
+### Navigation
+
+- A channel number is its 1-based position in the loaded playlist, not a stored identifier. Numbers stay stable when the rail is filtered, so typing `024` always means the same channel.
+- Typing three digits jumps straight to that channel; `Enter` confirms earlier. `ArrowUp`/`ArrowDown` step through the playlist. Shortcuts are ignored inside inputs, selects, the source dialog, and the video element.
+- The rail keeps numbers, names, and groups in separate visual columns so a filtered list is still scannable.
+
+### Motion
+
+- Switching channels plays one short `tune` overlay (channel number plus a sweep) over the video frame. It is decoration for a real state change, never a loading indicator, and it is skipped entirely under `prefers-reduced-motion: reduce`.
+
 ### UI responsibilities
 
 - `src/components/IPTV/PlayerShell.svelte` owns the active playlist, channel, source dialog, and user preferences.

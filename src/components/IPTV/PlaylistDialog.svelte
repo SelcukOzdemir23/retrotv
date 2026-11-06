@@ -146,7 +146,7 @@
   }
   .source-dialog::backdrop { background: rgba(2, 5, 8, .76); }
   .dialog-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; }
-  .dialog-kicker { margin: 0 0 10px; color: var(--c-accent); font: 600 10px var(--ff-mono); letter-spacing: .15em; }
+  .dialog-kicker { margin: 0 0 10px; color: var(--c-accent); font: 600 11px var(--ff-mono); letter-spacing: .15em; }
   .dialog-header h2 { margin: 0; color: var(--c-text); font: 600 clamp(24px, 5vw, 32px)/1.05 var(--ff-display); letter-spacing: -.04em; }
   .dialog-description { margin: 10px 0 0; color: var(--c-text-muted); font-size: 14px; line-height: 1.55; }
   .dialog-close {

@@ -20,6 +20,9 @@
       .sort((a, b) => a.localeCompare(b, 'tr')),
   );
 
+  // Kanal numarası playlist sırasıdır; arama veya grup filtresi numaraları değiştirmez.
+  let channelNumbers = $derived(new Map(channels.map((channel, index) => [channel.id, index + 1])));
+
   let filteredChannels = $derived(channels.filter((channel) => {
     const matchesGroup = selectedGroup === 'all' || channel.group === selectedGroup;
     const searchText = `${channel.name} ${channel.group ?? ''} ${channel.tvgId ?? ''}`.toLocaleLowerCase('tr');
@@ -60,7 +63,7 @@
 
     <div class="channel-list" aria-label="Kanallar">
       {#if filteredChannels.length > 0}
-        {#each filteredChannels as channel, index (channel.id)}
+        {#each filteredChannels as channel (channel.id)}
           <div class="channel-row" class:active={channel.id === selectedId}>
             <button
               class="channel-select"
@@ -68,8 +71,9 @@
               aria-current={channel.id === selectedId ? 'true' : undefined}
               onclick={() => onSelect(channel)}
             >
-              <span class="channel-order">{String(index + 1).padStart(2, '0')}</span>
+              <span class="channel-order">{String(channelNumbers.get(channel.id) ?? 0).padStart(3, '0')}</span>
               <span class="channel-logo">
+                <span class="channel-initial" aria-hidden="true">{channel.name.slice(0, 1).toLocaleUpperCase('tr')}</span>
                 {#if channel.logoUrl}
                   <img
                     src={channel.logoUrl}
@@ -79,8 +83,6 @@
                     loading="lazy"
                     onerror={(event) => ((event.currentTarget as HTMLImageElement).hidden = true)}
                   />
-                {:else}
-                  <span aria-hidden="true">{channel.name.slice(0, 1).toLocaleUpperCase('tr')}</span>
                 {/if}
               </span>
               <span class="channel-copy">
@@ -111,7 +113,8 @@
     <div class="rail-loading" aria-live="polite">Kanal listesi hazırlanıyor…</div>
   {:else}
     <div class="rail-empty">
-      <p>Henüz kanal listesi eklenmedi.</p>
+      <p>Henüz kanal listesi yok.</p>
+      <p class="rail-empty-detail">Kendi M3U dosyanı aç, HTTPS bir playlist adresi gir ya da IPTV-org ülke dizininden başla.</p>
       <button type="button" onclick={onOpenSources}>Kaynak ekle</button>
     </div>
   {/if}
@@ -143,7 +146,7 @@
   .rail-kicker {
     margin: 0 0 7px;
     color: var(--c-accent);
-    font: 600 10px/1 var(--ff-mono);
+    font: 600 11px/1 var(--ff-mono);
     letter-spacing: .13em;
   }
   .rail-heading h2 {
@@ -158,7 +161,7 @@
     border: 1px solid var(--c-border);
     border-radius: 5px;
     color: var(--c-text-muted);
-    font: 11px/1 var(--ff-mono);
+    font: 12px/1 var(--ff-mono);
     text-align: center;
   }
   .rail-filters {
@@ -195,7 +198,7 @@
     min-width: 0;
     flex: 1;
     display: grid;
-    grid-template-columns: 23px 36px minmax(0, 1fr) auto;
+    grid-template-columns: 32px 36px minmax(0, 1fr) auto;
     align-items: center;
     gap: 10px;
     padding: 9px 7px;
@@ -208,13 +211,16 @@
   }
   .channel-select:hover { background: rgba(255,255,255,.045); }
   .channel-select.active { background: color-mix(in srgb, var(--c-accent) 10%, transparent); }
+  .channel-select.active .channel-order { color: var(--c-accent); }
   .channel-order {
-    color: var(--c-text-muted);
-    font: 10px var(--ff-mono);
-    text-align: right;
+    color: var(--c-text-subtle);
+    font: 12px var(--ff-mono);
     font-variant-numeric: tabular-nums;
+    letter-spacing: .02em;
+    text-align: right;
   }
   .channel-logo {
+    position: relative;
     width: 36px;
     height: 36px;
     display: grid;
@@ -225,7 +231,8 @@
     color: var(--c-text-muted);
     font: 600 15px var(--ff-display);
   }
-  .channel-logo img { width: 100%; height: 100%; object-fit: contain; }
+  .channel-initial { text-transform: uppercase; }
+  .channel-logo img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; background: var(--c-surface-high); }
   .channel-copy { min-width: 0; display: grid; gap: 4px; }
   .channel-name {
     overflow: hidden;
@@ -238,11 +245,11 @@
   .channel-meta {
     overflow: hidden;
     color: var(--c-text-muted);
-    font: 10px var(--ff-mono);
+    font: 11px var(--ff-mono);
     text-overflow: ellipsis;
     white-space: nowrap;
   }
-  .live-marker { color: var(--c-accent); font: 600 9px var(--ff-mono); letter-spacing: .07em; }
+  .live-marker { color: var(--c-accent); font: 600 10px var(--ff-mono); letter-spacing: .07em; }
   .favorite-button {
     width: 34px;
     flex: 0 0 34px;
@@ -260,7 +267,16 @@
     font-size: 13px;
     line-height: 1.5;
   }
+  .rail-empty {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 20px 18px 28px;
+  }
   .rail-empty p { margin: 0 0 13px; }
+  .rail-empty .rail-empty-detail { margin: 6px 0 16px; color: var(--c-text-subtle); font-size: 12px; line-height: 1.6; }
   .rail-empty button, .rail-footer button {
     border: 0;
     background: transparent;
@@ -276,7 +292,7 @@
     padding: 12px 15px;
     border-top: 1px solid var(--c-border);
     color: var(--c-text-muted);
-    font: 10px var(--ff-mono);
+    font: 11px var(--ff-mono);
   }
   @media (min-width: 761px) and (max-width: 1180px) {
     /* İki sütunlu düzende sayfa kayar; kanal listesi masa yüksekliğini aşmaz
