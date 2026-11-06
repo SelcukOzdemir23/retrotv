@@ -1,139 +1,73 @@
-# 📺 RetroTV — Movie & TV Streaming Platform
+# RetroTV
 
-> A vintage CRT television experience for discovering and watching movies & TV shows via TMDB + Vidking Player.
+RetroTV is a Turkish-language IPTV player for playlists you are authorized to use. Add an M3U file, a CORS-enabled HTTPS playlist, or choose a country playlist from the optional IPTV-org community directory.
 
-[![Built with Astro](https://img.shields.io/badge/Built%20with-Astro-FF5D01?logo=astro)](https://astro.build)
-[![Svelte](https://img.shields.io/badge/Svelte-5-FF3E00?logo=svelte)](https://svelte.dev)
-[![Tailwind CSS](https://img.shields.io/badge/Tailwind%20CSS-4-06B6D4?logo=tailwindcss)](https://tailwindcss.com)
+## What it does
 
----
+- Parses M3U channel names, groups, logos, and stream addresses in the browser
+- Plays HLS with hls.js where supported and native HLS where the browser provides it
+- Supports browser-playable direct video sources
+- Filters channels by name and group; saves favorites locally
+- Reports common playback limitations such as CORS, HTTP mixed content, unsupported formats, and DRM
 
-## ✨ Features
+> IPTV-org entries are community-submitted stream links, not streams hosted by RetroTV. Availability, regional access, and rights vary by channel. Only open broadcasts you are authorized to watch. RetroTV does not bypass DRM, geo restrictions, or CORS.
 
-- **📺 Retro CRT TV Interface** — Authentic scanlines, flicker, vignette, glass glare, and power on/off animations
-- **🎬 TMDB Integration** — Browse trending movies & TV shows, search, and explore by genre
-- **🖥️ Vidking Player** — Embedded video player for seamless streaming
-- **📋 Content Browser** — Slide-out panel with trending, search, and genre filters
-- **🎮 Physical-style Remote Control** — Navigation, browse, refresh, and power buttons
-- **🔄 Static Noise Transition** — Analog-style view change effect
-- **📱 Responsive Design** — Optimized for desktop with portrait-rotation warning on mobile
+## Technology
 
----
+- Astro 7 static output
+- Svelte 5
+- Tailwind CSS 4
+- Vite 8
+- hls.js
 
-## 🏗 Architecture
+## Requirements
 
-```
-src/
-├── components/
-│   ├── TV/
-│   │   ├── TVFrame.astro        # CRT TV casing (HTML/CSS art)
-│   │   ├── Screen.svelte        # TMDB content viewer with CRT effects
-│   │   ├── StaticNoise.svelte   # Canvas-based analog noise
-│   │   ├── MediaGrid.svelte     # Movie/TV show card grid
-│   │   ├── MediaDetail.svelte   # Detail view with Vidking player
-│   │   ├── ContentBrowser.svelte # Trending/search/genre browser panel
-│   │   └── ApiKeyPrompt.svelte  # TMDB API key entry modal
-│   ├── Remote/
-│   │   └── RemoteControl.svelte # Floating remote control UI
-│   └── RoomBackground.astro     # Nostalgic room background
-├── lib/
-│   ├── types.ts                 # TypeScript interfaces (TMDB types, app types)
-│   ├── tmdbApi.ts               # TMDB API client
-│   └── iptvApi.ts               # Legacy IPTV parser (deprecated)
-├── stores/
-│   ├── tvStore.ts               # Power, volume, mute state
-│   ├── channelStore.ts          # Legacy channel state (deprecated)
-│   └── appStore.ts              # TMDB app state (view, media, search, genres)
-├── styles/
-│   ├── global.css               # Tailwind imports + reset
-│   └── crt-effects.css          # Scanlines, flicker, glow, turn-on/off
-├── layouts/Layout.astro         # Base HTML layout
-└── pages/index.astro            # Main page assembly
-```
-
----
-
-## 🛠 Tech Stack
-
-| Layer            | Technology         |
-| ---------------- | ------------------ |
-| Framework        | Astro 5            |
-| Interactivity    | Svelte 5           |
-| State Management | Nano Stores        |
-| Styling          | Tailwind CSS 4     |
-| Video Player     | Vidking Player     |
-| Data API         | TMDB (v3)          |
-| Deployment       | GitHub Pages       |
-
----
-
-## 🚀 Getting Started
-
-### Prerequisites
-
-- Node.js 20+
+- Node.js 22.23.4 or newer
 - npm
-- TMDB API key (free at [themoviedb.org](https://www.themoviedb.org/settings/api))
+- A local M3U playlist, a CORS-enabled HTTPS playlist URL, or the optional IPTV-org directory
 
-### Installation
+## Development
 
-```bash
-git clone https://github.com/YOUR_USERNAME/retrotv.git
-cd retrotv
-npm install
-```
-
-### Development
-
-```bash
+```sh
+npm ci
 npm run dev
 ```
 
-Open [http://localhost:4321](http://localhost:4321) in your browser.
+The app never uploads a local playlist to a server. Remote playlist and video requests go directly from the browser to their respective sources. Remote servers must allow browser CORS requests; secure deployments also require HTTPS streams. Do not share playlist URLs containing credentials or signed query parameters.
 
-### Build
+## Quality checks
 
-```bash
+```sh
+npm run check
 npm run build
 ```
 
-Static output will be in the `dist/` directory.
+GitHub Actions runs both checks before publishing to GitHub Pages.
 
----
+## Project structure
 
-## 🌐 Deployment
-
-The project is configured for **GitHub Pages** deployment via GitHub Actions:
-
-1. Push to `main` branch
-2. GitHub Actions automatically builds and deploys
-3. Your site will be live at `https://YOUR_USERNAME.github.io/retrotv`
-
-### Manual Configuration
-
-Before deploying, update `astro.config.mjs`:
-
-```js
-export default defineConfig({
-  site: 'https://YOUR_USERNAME.github.io/retrotv',
-  base: '/retrotv',
-  // ...
-});
+```text
+src/
+├── components/IPTV/  # Channel rail, source dialog, player, and app shell
+├── layouts/          # Astro document shell
+├── lib/iptv/         # M3U parsing, source loading, and IPTV types
+├── pages/            # Astro routes
+└── styles/           # Global styles and signal-desk design tokens
+docs/
+├── ARCHITECTURE.md   # Data flow, playback lifecycle, and source limits
+└── ROADMAP.md        # Current priorities and follow-up work
 ```
 
----
+## IPTV-org directory
 
-## 📡 Data Sources
+RetroTV fetches the country index and a selected country playlist from the public [iptv-org API](https://github.com/iptv-org/api) and [iptv-org playlists](https://github.com/iptv-org/iptv). The directory is optional and its community-submitted streams are not guaranteed to work. RetroTV does not mirror or bundle the directory's stream list.
 
-- **TMDB API** — Movie & TV show metadata, posters, ratings, genres
-- **Vidking Player** — Embedded video streaming via iframe
+See [the architecture notes](docs/ARCHITECTURE.md) for playback support and browser limitations.
 
----
+## Deployment
 
-## 📄 License
+The repository is configured for GitHub Pages under `/retrotv`. The deployment uses Node.js 22.23.4.
 
-MIT
+## License and attribution
 
----
-
-*Built with ❤️ as a portfolio project.*
+RetroTV source code is licensed under MIT. IPTV-org data and stream links have their own source and legal notes; see the linked repositories before redistributing any data. RetroTV is not affiliated with IPTV-org or any broadcaster.

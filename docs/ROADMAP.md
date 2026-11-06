@@ -1,120 +1,65 @@
-# RetroTV — Proje Rote ve Analiz
+# RetroTV roadmap
 
-> Durum: Geliştirme devam ediyor | Dil: Türkçe | Stack: Astro 5 + Svelte 5 + Tailwind 4 + TMDB API
+RetroTV is a portfolio-grade, browser-based IPTV player. Its first job is simple: let a person load a playlist they are authorized to use, select a channel, and see a clear result when a browser or stream limitation prevents playback.
 
----
+## Current baseline
 
-## 1. Mevcut Durum (Tamamlanan)
+- Astro 7, Svelte 5, Tailwind CSS 4, Vite 8, and hls.js
+- Local M3U file import, HTTPS playlist URL import, and optional IPTV-org country playlists
+- M3U normalization for names, logos, groups, and common player limitations
+- Native HLS where supported and hls.js playback through an HTML video element
+- Channel search, group filters, and locally saved favorites
+- Static GitHub Pages deployment under `/retrotv`
+- `npm run check` and `npm run build` as CI quality gates
 
-### ✅ İnfra ve Kurulum
-- Astro 5 + Svelte 5 + Tailwind 4 kurulumu tamamlandı
-- `npm run build` başarıyla geçiyor (1 sayfa, 137 modül)
-- `.env` yok; TMDB API anahtarı ortam değişkeni veya localStorage üzerinden yönetiliyor
+## Product limits
 
-### ✅ Tasarım Sistemi (Broadcast Standard)
-- `src/styles/tokens.css` — tek akçam renk: `#00ff33` (fosforlu yeşil); `--c-bg`, `--c-surface`, `--c-border`, `--c-text`, `--c-green`, `--c-gold`, `--c-error` vb. tokenlar
-- `src/styles/global.css` — tokenları içe aktarıyor
-- Yazı tipleri: Space Grotesk (başlıklar), IBM Plex Mono (meta/veri), Inter/System UI (gövde), VT323 (CRT estetiği)
-- 4px boşluk grid, düz katmanlı derinlik, glass morphism yok
+- The app does not host, proxy, decrypt, or redistribute streams.
+- A remote playlist and every HLS segment must permit browser CORS requests.
+- Secure pages block insecure HTTP stream URLs.
+- Browser JavaScript cannot set forbidden User-Agent or Referer headers.
+- DRM-protected, unsupported raw transport-stream, closed, and geo-blocked sources may not play.
+- IPTV-org is a community directory, not a stream availability or rights guarantee.
 
-### ✅ Bileşenler
-- `src/components/ui/Button.svelte` — primary/ghost/danger varyantları, sm/md/lg boyutları, loading durumu
-- `src/components/ui/Card.svelte` — üst-örnek / özellik kartı
-- `src/components/ui/Input.svelte` — hata durumu, odaklanma stilleri, şifre görünürlüğü uygun
-- `src/components/ui/Pill.svelte` — etiket / rozet bileşeni
-- `src/components/TV/KeyGate.svelte` — API anahtarı kontrolü: yoksa `ApiKeyPrompt`, varsa uygulama içeriği
-- `src/components/TV/Screen.svelte` — refactor edildi: `btn-primary` / `btn-ghost` hardcoded stilleri `Button` bileşenine geçti
-- `src/components/TV/ApiKeyPrompt.svelte` — `Button` ve CSS tokenları kullanacak şekilde refactor edildi
-- `src/components/TV/MediaDetail.svelte` — hata durumu, type guard, `as` cast temizliği
-- `src/components/TV/ContentBrowser.svelte` — gereksiz `as` cast'ler kaldırıldı
-- `src/components/TV/StaticNoise.svelte` — canvas gürültü, değişmeden kalabilir
-- `src/components/Remote/RemoteControl.svelte` — kısmen hardcoded, refactor adayı
-- `src/components/TV/TVFrame.astro` — tüm renkler hardcoded, refactor adayı
+## Priorities
 
-### ✅ API Entegrasyonu
-- `src/lib/tmdbApi.ts` — TMDB trending endpoint'i
-- `src/lib/types.ts` — `TMDBMediaItem`, `backdropUrl`, `getMediaTitle`, `getMediaYear`
-- `src/stores/appStore.ts` — `loadApiKey()` tanımlı, `KeyGate` üzerinden mount sırasında çağrılıyor
-- `src/stores/tvStore.ts` — TV güç durumu, kanal yönetimi
+### 1. Reliable first-play experience
 
----
+- Improve M3U compatibility for real-world EXTINF metadata and malformed rows.
+- Make source loading cancellable and report parse, CORS, HTTP, format, and playback errors distinctly.
+- Track HLS and HTML video lifecycle cleanly when channels change or the page closes.
+- Keep the playlist in memory; persist only non-sensitive preferences such as favorites.
+- Use an explicitly licensed sample stream for manual playback verification.
 
-## 2. Rota Netleştirmesi
+### 2. Channel discovery and viewing
 
-### Seçim: Seçenek A — Retro TV Akış Platformu
+- Add sort modes and country/language/category filters without loading global stream data up front.
+- Add a compact now/next EPG view using XMLTV data, with correct timezone handling.
+- Add channel logo fallbacks, recent channels, and keyboard/remote-friendly channel navigation.
+- Add optional audio/subtitle/quality selection only where the stream exposes those tracks.
 
-**Ana hedef:** TMDB keşfi + oynatma + CRT arayüz + uzaktan kumanda deneyimi.
+### 3. Distinctive design and accessibility
 
-**IPTV/M3U (Seçenek B):** İsteğe bağlı, sonradan eklenecek hibrit katman. Şu anki öncelik **değildir**. M3U dosyaları zaten `docs/` altında mevcut (`beinsport.m3u`, `efti.m3u`) ama bu, gelecek bir phase için not olarak tutuluyor.
+- Keep the video surface dominant and quiet; put channel navigation in a scannable rail.
+- Use the red on-air mark only for actual active/live states.
+- Keep CRT texture subtle, optional, and limited to the video frame.
+- Preserve keyboard focus, reduced-motion preferences, readable contrast, and explicit mobile layouts.
+- Review the whole product after the initial playback flow is stable.
 
-**API Anahtarı Durumu:** Kullanıcı onayıyla engel sayılmıyor. TMDB'de sınır yok, `loadApiKey()` ortam değişkeni/localStorage üzerinden esnek şekilde yönetiliyor. Kullanıcıya gösterilen `ApiKeyPrompt` sadece tercih bağlamında görünür.
+### 4. Repository and documentation
 
----
+- Keep user playlists, signed links, and credentials out of Git.
+- Document IPTV-org's community-sourced data and limitations accurately.
+- Keep dependencies, source modules, and component folders aligned to the IPTV product.
+- Add screenshots after the interface and sample-source policy are settled.
 
-## 3. Roadmap
+## Design read
 
-### Phase 1 — Temel Akış (Şu an)
-| Adım | Açıklama | Durum |
-|------|----------|-------|
-| API anahtarı akışı | `loadApiKey()` mount時に çağrılmakta, `KeyGate` ile geçiş | ✅ Tamamlandı
-| Shared UI bileşenleri | Button, Card, Input, Pill oluşturuldu | ✅ Tamamlandı
-| Screen refactor | `Button` entegrasyonu, hardcoded renklerin tokenlara dönüşümü | 🔄 Devam ediyor
-| RemoteControl refactor | Hardcoded renklerin CSS tokenlarına geçiş | ⏳ Planlandı
-| TVFrame refactor | Hardcoded `#b8b8b8`, `#666`, `#999` renklerinin tokenlara geçiş | ⏳ Planlandı
+This is a live-channel workspace, not an on-demand movie catalog or physical TV prop. Its signature is the restrained “on-air” tally light and a broadcast-control layout that makes playlist, channel, and playback state obvious.
 
-### Phase 2 — İçerik Deneyimi
-| Adım | Açıklama | Durum |
-|------|----------|-------|
-| MediaDetail iyileştirmeler | Oyuncu arayüzü, sezon/bölüm listesi, benzer içerikler | ⏳ Planlandı
-| ContentBrowser filtreleme | Tür, yıl, puan filtreleri | ⏳ Planlandı
-| Arama | TMDB arama entegrasyonu | ⏳ Planlandı
-| Detay sayfası navigate | Screen → MediaDetail akışı mevcut | ✅ Var
+## Explicitly out of scope for the first release
 
-### Phase 3 — CRT ve Arayüz Özelleştirmeleri
-| Adım | Açıklama | Durum |
-|------|----------|-------|
-| CRT ekran katmanı | Tarama çizgileri, vignette, parlaklık efektleri mevcut | ✅ Var
-| Uzaktan kumanda animasyonları | `RemoteControl` flash efektleri mevcut | ✅ Var
-| Ses efekleri (isteğe bağlı) | Tuş basımı, güç açma/kapama sesleri | ⏳ Planlandı
-| Karanlık tema varyantları | Tek renk akçamı üzerinden alternate paletler | ⏳ Planlandı
-
-### Phase 4 — IPTV/M3U Hibrit (İsteğe Bağlı, Sonradan)
-| Adım | Açıklama | Durum |
-|------|----------|-------|
-| M3U oynatma | `docs/beinsport.m3u`, `docs/efti.m3u` desteği | ⏳ İsteğe bağlı
-| Kanal listesi | M3U'den kanal çekimi, gruplama | ⏳ İsteğe bağlı
-| TV + IPTV geçişi | TMDB akışı ile M3U kanalları arasında geçiş | ⏳ İsteğe bağlı
-
----
-
-## 4. Teknik Kararlar ve Nedenleri
-
-| Karar | Neden |
-|-------|-------|
-| Tek akçam renk (`#00ff33`) | Retro CRT estetiği, net görsel kimlik, SLOP yok |
-| Düz katmanlı derinlik | Glass morphism yok, performans ve okunabilirlik için |
-| 4px spacing grid | Tutarlı boşluklar, hızlı geliştirme |
-| Space Grotesk başlıklar | Retro ama modern okunabilirlik |
-| IBM Plex Mono meta | Teknolojik, veri odaklı his |
-| API anahtarı localStorage/env | Kullanıcıya esneklik, hardcoded yok |
-| KeyGate komponenti | API anahtarı yoksa uygulama içeriğini engellemez, sadece uyarır |
-
----
-
-## 5. Sonraki Adımlar (Öncelikli)
-
-1. `RemoteControl.svelte` hardcoded renklerini CSS tokenlarına dönüştür
-2. `TVFrame.astro` hardcoded renkleri (`#b8b8b8`, `#666`, `#999`) CSS tokenlarına dönüştür
-3. `MediaDetail` oyuncu arayüzünü tamamla (video oynatıcı, progres bar)
-4. `ContentBrowser` filtreleme ve arama ekle
-5. Build ve test doğrulamasını tekrarlayın
-
----
-
-## 6. Portföy Değerlendirmesi
-
-Bu proje, açık kaynak ve profesyonel tasarım standartlarına uygun bir CRT TV akış platformu örneği olarak portföyde güçlü bir örnek teşkil edecek. Tasarım felsefesi (Broadcast Standard), tek renk akçamı ve düz katmanlı derinlik, projeyi benzersiz ve hatırlanabilir kılar.
-
----
-
-*Son güncelleme: Geliştirme devam ediyor*
+- Public proxying of arbitrary streams
+- DRM circumvention or geo-restriction bypass
+- Accounts, cloud-synced playlists, or server-side credential storage
+- A promise that every third-party channel will always play
